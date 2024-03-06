@@ -1,10 +1,10 @@
 import convict from "convict";
-import { ipaddress } from "convict-format-with-validator";
-
+import { ipaddress, url } from "convict-format-with-validator";
 convict.addFormat(ipaddress);
+convict.addFormat(url);
 
 // Define a schema
-export const config = convict({
+const config = convict({
     env: {
         doc: "The application environment.",
         format: ["production", "development", "test"],
@@ -25,22 +25,36 @@ export const config = convict({
         arg: "port",
     },
     db: {
-        host: {
-            doc: "Database host name/IP",
+        uri: {
+            doc: "Connection URI for mongo",
             format: "*",
-            default: "server1.dev.test",
-        },
-        name: {
-            doc: "Database name",
-            format: String,
-            default: "users",
+            default: "mongodb://localhost:27017/crm",
         },
     },
-    admins: {
-        doc: "Users with write access, or null to grant full access without login.",
-        format: Array,
-        nullable: true,
-        default: null,
+    corsOrigin: {
+        doc: "CORS origin whitelist",
+        format: "*",
+        default: "*",
+    },
+    accessTokenSecret: {
+        doc: "Access token secret",
+        formate: String,
+        default: "secret",
+    },
+    accessTokenExpiry: {
+        doc: "Expiry for access token",
+        format: String,
+        default: "1d",
+    },
+    refreshTokenSecret: {
+        doc: "Refresh token secret",
+        format: String,
+        default: "secret",
+    },
+    refreshTokenExpiry: {
+        doc: "Refresh token expiry",
+        format: String,
+        default: "10d",
     },
 });
 
@@ -50,3 +64,5 @@ config.loadFile("./config/" + env + ".json");
 
 // Perform validation
 config.validate({ allowed: "strict" });
+
+export { config };

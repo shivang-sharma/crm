@@ -1,0 +1,6 @@
+export enum CONTACT_TYPE {
+    CUSTOMER,
+    PARTNER,
+    VENDOR,
+    QUALIFIED_LEAD,
+}

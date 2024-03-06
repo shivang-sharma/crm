@@ -1,0 +1,7 @@
+export enum LEAD_STATUS {
+    NEW_LEAD,
+    ATTEMPTED_TO_CONTACT,
+    CONTACTED,
+    QUALIFIED,
+    UNQUALIFIED,
+}

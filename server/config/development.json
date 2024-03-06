@@ -1,6 +1,12 @@
 {
+    "corsOrigin": "*",
+    "ip": "127.0.0.1",
+    "port": 5000,
     "db": {
-        "host": "127.0.0.1",
-        "name": "crm"
-    }
+        "uri": "mongodb://localhost:27017/crm"
+    },
+    "accessTokenSecret": "secrete",
+    "accessTokenExpiry": "2d",
+    "refreshTokenSecret": "secrete",
+    "refreshTokenExpiry": "11d"
 }
