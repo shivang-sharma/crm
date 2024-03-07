@@ -13,6 +13,7 @@ import { ApiError } from "@/utils/error/ApiError";
 import { CustomRequest } from "@/utils/CustomRequest";
 import { handler } from "@/utils/error/ErrorHandler";
 import { logger } from "@/utils/logger";
+import { ApiV1Router } from "@/api/v1";
 
 // import { ApiV1Router } from "./components/v1";
 
@@ -48,7 +49,7 @@ app.options("*", corsMiddleware);
 app.use(corsMiddleware);
 app.use(cookieParser());
 
-// app.use("/api/v1", ApiV1Router);
+app.use("/api/v1", ApiV1Router);
 app.get("/", (req: Request, res: Response) => res.send("It works! Changed"));
 
 /**

@@ -10,9 +10,9 @@ export class ApiError extends Error {
     constructor(
         statusCode: number,
         message = "Something went wrong",
+        isOperational: boolean,
         errors: any[] = [],
-        stack = "",
-        isOperational: boolean
+        stack = ""
     ) {
         super(message);
         this.statusCode = statusCode;
