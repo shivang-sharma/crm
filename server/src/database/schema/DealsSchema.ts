@@ -32,9 +32,9 @@ const dealsSchema = new Schema<IDeals>(
             },
         },
         contacts: {
-            type: [Schema.Types.ObjectId],
+            type: [{ type: Schema.Types.ObjectId, ref: "Contacts" }],
             minlength: 1,
-            ref: "Contacts",
+            maxlength: 5,
         },
         account: {
             type: Schema.Types.ObjectId,
@@ -42,16 +42,35 @@ const dealsSchema = new Schema<IDeals>(
             required: true,
         },
         priority: {
-            type: Number,
+            type: String,
             enum: PRIORITY,
             default: PRIORITY.LOW,
         },
         expectedCloseDate: {
             type: Date,
         },
-        closeProbability: {},
-        actualValue: {},
-        closedAt: {},
+        closeProbability: {
+            type: Number,
+            default: 100,
+        },
+        actualValue: {
+            amount: {
+                type: Number,
+                default: 0,
+            },
+            currency: {
+                type: Number,
+                enum: CURRENCY,
+                default: CURRENCY.USD,
+            },
+        },
+        closedAt: {
+            type: Date,
+        },
+        organisation: {
+            type: Schema.Types.ObjectId,
+            ref: "Organisations",
+        },
     },
     {
         timestamps: true,

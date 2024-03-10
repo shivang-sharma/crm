@@ -315,49 +315,65 @@ export class ContactsService {
         user: IUsers,
         contactId: string
     ) {
-        const response: DeleteOneContactServiceResult = {
-            contactBelongsToDifferentOrganisation: false,
-            notFound: false,
-            contact: null,
-            failed: false,
-            notAuthorized: false,
-        };
-        if (user.role !== ROLE.ADMIN) {
-            response.notAuthorized = true;
-            logger.warn(
-                `User is does not have sufficient privileges to perform the action, action denied for contactId:${contactId} userRole:${user.role} correlationId:${correlationId}`
+        try {
+            const response: DeleteOneContactServiceResult = {
+                contactBelongsToDifferentOrganisation: false,
+                notFound: false,
+                contact: null,
+                failed: false,
+                notAuthorized: false,
+            };
+            if (user.role !== ROLE.ADMIN) {
+                response.notAuthorized = true;
+                logger.warn(
+                    `User is does not have sufficient privileges to perform the action, action denied for contactId:${contactId} userRole:${user.role} correlationId:${correlationId}`
+                );
+                return response;
+            }
+            const contact = await FindContactById(contactId);
+            if (!contact) {
+                response.notFound = true;
+                logger.warn(
+                    `Contact not found contactId:${contactId} for correlationId:${correlationId}`
+                );
+                return response;
+            }
+            // if the contact belong to different org reject the request
+            if (contact.organisation !== user.organisation) {
+                response.contactBelongsToDifferentOrganisation = true;
+                logger.warn(
+                    `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                );
+                return response;
+            }
+            const deletedResult = await DeleteOneContactById(contactId);
+            if (
+                deletedResult.deletedCount === 0 ||
+                !deletedResult.acknowledged
+            ) {
+                logger.warn(
+                    `Couldn't delete the contact for unknown reason deleteResult:${deletedResult} contactId:${contactId}, for correlationId:${correlationId}`
+                );
+                response.failed = true;
+                return response;
+            }
+            logger.info(
+                `Contact deleted successfully contactId:${contactId}, correlationId:${correlationId}`
             );
+            response.contact = contact;
             return response;
-        }
-        const contact = await FindContactById(contactId);
-        if (!contact) {
-            response.notFound = true;
-            logger.warn(
-                `Contact not found contactId:${contactId} for correlationId:${correlationId}`
+        } catch (error) {
+            throw new ApiError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                "Something went wrong",
+                true,
+                [],
+                `Name: ${(error as Error).name}
+                Message: ${(error as Error).message} 
+                Cause: ${(error as Error).cause}
+                Stack: ${(error as Error).stack}`
             );
-            return response;
         }
-        // if the contact belong to different org reject the request
-        if (contact.organisation !== user.organisation) {
-            response.contactBelongsToDifferentOrganisation = true;
-            logger.warn(
-                `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
-            );
-            return response;
-        }
-        const deletedResult = await DeleteOneContactById(contactId);
-        if (deletedResult.deletedCount === 0 || !deletedResult.acknowledged) {
-            logger.warn(
-                `Couldn't delete the contact for unknown reason deleteResult:${deletedResult} contactId:${contactId}, for correlationId:${correlationId}`
-            );
-            response.failed = true;
-            return response;
-        }
-        logger.info(
-            `Contact deleted successfully contactId:${contactId}, correlationId:${correlationId}`
-        );
-        response.contact = contact;
-        return response;
     }
 }
 export type CreateContactServiceResult = {

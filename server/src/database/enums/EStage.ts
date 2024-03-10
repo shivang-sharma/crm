@@ -1,3 +1,5 @@
+import z from "zod";
+
 export enum STAGE {
     NEW,
     DISCOVERY,
@@ -6,3 +8,4 @@ export enum STAGE {
     WON,
     LOST,
 }
+export const ZSTAGE = z.nativeEnum(STAGE);
