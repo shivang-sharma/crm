@@ -15,8 +15,6 @@ import { handler } from "@/utils/error/ErrorHandler";
 import { logger } from "@/utils/logger";
 import { ApiV1Router } from "@/api/v1";
 
-// import { ApiV1Router } from "./components/v1";
-
 export const app = express();
 
 // TODO: Use node-rate-limiter-flexible
