@@ -40,26 +40,31 @@ const contactsSchema = new Schema<IContacts>(
             type: String,
             enum: PRIORITY,
             default: PRIORITY.LOW,
+            index: true,
         },
         account: {
             type: Schema.Types.ObjectId,
             ref: "Accounts",
             default: null,
+            index: true,
         },
         status: {
             type: String,
             enum: CONTACT_STATUS,
             default: CONTACT_STATUS.ACTIVE,
+            index: true,
         },
         type: {
             type: String,
             enum: CONTACT_TYPE,
             required: true,
+            index: true,
         },
         organisation: {
             type: Schema.Types.ObjectId,
             ref: "Organisations",
             required: true,
+            index: true,
         },
     },
     {

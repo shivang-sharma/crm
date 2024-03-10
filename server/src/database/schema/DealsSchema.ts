@@ -10,20 +10,24 @@ const dealsSchema = new Schema<IDeals>(
             type: String,
             required: true,
             unique: true,
+            index: true,
         },
         stage: {
             type: Number,
             enum: STAGE,
             default: STAGE.NEW,
+            index: true,
         },
         owner: {
             type: Schema.Types.ObjectId,
             ref: "Users",
+            index: true,
         },
         value: {
             amount: {
                 type: Number,
                 required: true,
+                index: true,
             },
             currency: {
                 type: Number,
@@ -40,11 +44,13 @@ const dealsSchema = new Schema<IDeals>(
             type: Schema.Types.ObjectId,
             ref: "Accounts",
             required: true,
+            index: true,
         },
         priority: {
             type: String,
             enum: PRIORITY,
             default: PRIORITY.LOW,
+            index: true,
         },
         expectedCloseDate: {
             type: Date,
@@ -52,6 +58,7 @@ const dealsSchema = new Schema<IDeals>(
         closeProbability: {
             type: Number,
             default: 100,
+            index: true,
         },
         actualValue: {
             amount: {
@@ -70,6 +77,7 @@ const dealsSchema = new Schema<IDeals>(
         organisation: {
             type: Schema.Types.ObjectId,
             ref: "Organisations",
+            index: true,
         },
     },
     {

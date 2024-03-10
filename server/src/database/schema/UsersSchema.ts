@@ -36,6 +36,7 @@ const usersSchema = new Schema<IUsers>(
             unique: true,
             lowercase: true,
             trim: true,
+            index: true,
         },
         password: {
             type: String,
@@ -44,6 +45,7 @@ const usersSchema = new Schema<IUsers>(
         organisation: {
             type: Schema.Types.ObjectId,
             ref: "Organisation",
+            index: true,
         },
         refreshToken: {
             type: String,

@@ -8,7 +8,7 @@ const leadsSchema = new Schema<ILeads>(
             type: String,
             required: true,
             unique: true,
-            indexes: true,
+            index: true,
         },
         email: {
             type: String,
@@ -18,7 +18,6 @@ const leadsSchema = new Schema<ILeads>(
         company: {
             type: String,
             required: true,
-            index: true,
         },
         location: {
             type: String,
@@ -26,6 +25,7 @@ const leadsSchema = new Schema<ILeads>(
         owner: {
             type: Schema.Types.ObjectId,
             ref: "Users",
+            index: true,
         },
         phone: {
             countryCode: {
@@ -53,10 +53,12 @@ const leadsSchema = new Schema<ILeads>(
             type: String,
             min: 50,
             max: 500,
+            text: true,
         },
         organisation: {
             type: Schema.Types.ObjectId,
             ref: "Organisations",
+            index: true,
         },
     },
     {

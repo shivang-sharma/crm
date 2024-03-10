@@ -10,7 +10,7 @@ const accountsSchema = new Schema<IAccounts>(
             type: String,
             required: true,
             unique: true,
-            index: true,
+            text: true,
         },
         description: {
             type: String,
@@ -21,21 +21,31 @@ const accountsSchema = new Schema<IAccounts>(
         industry: {
             type: String,
             required: true,
+            text: true,
         },
         priority: {
             type: String,
             enum: PRIORITY,
             default: PRIORITY.MEDIUM,
+            index: true,
         },
         size: {
             type: String,
             enum: SIZE,
             required: true,
+            index: true,
         },
         type: {
             type: String,
             enum: ACCOUNT_TYPE,
             default: ACCOUNT_TYPE.PROSPECT,
+            index: true,
+        },
+        organisation: {
+            type: Schema.Types.ObjectId,
+            ref: "Organisations",
+            required: true,
+            index: true,
         },
     },
     {
