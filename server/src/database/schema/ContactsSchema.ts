@@ -14,6 +14,7 @@ const contactsSchema = new Schema<IContacts>(
         },
         title: {
             type: String,
+            default: "",
         },
         email: {
             type: String,
@@ -21,27 +22,44 @@ const contactsSchema = new Schema<IContacts>(
             unique: true,
         },
         phone: {
-            type: String,
-            required: true,
-            unique: true,
+            countryCode: {
+                type: String,
+                required: true,
+            },
+            countryIso3: {
+                type: String,
+                required: true,
+            },
+            number: {
+                type: String,
+                required: true,
+                unique: true,
+            },
         },
         priority: {
-            type: Number,
+            type: String,
             enum: PRIORITY,
             default: PRIORITY.LOW,
         },
         account: {
             type: Schema.Types.ObjectId,
             ref: "Accounts",
+            default: null,
         },
         status: {
-            type: Number,
+            type: String,
             enum: CONTACT_STATUS,
             default: CONTACT_STATUS.ACTIVE,
         },
         type: {
-            type: Number,
+            type: String,
             enum: CONTACT_TYPE,
+            required: true,
+        },
+        organisation: {
+            type: Schema.Types.ObjectId,
+            ref: "Organisations",
+            required: true,
         },
     },
     {

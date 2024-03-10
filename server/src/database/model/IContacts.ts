@@ -8,8 +8,13 @@ export interface IContacts extends Document {
     title: string;
     name: string;
     priority: PRIORITY;
-    phone: string;
+    phone: {
+        countryCode: string;
+        countryIso3: string;
+        number: string;
+    };
     email: string;
     status: CONTACT_STATUS;
-    account: mongoose.Types.ObjectId;
+    account: mongoose.Schema.Types.ObjectId;
+    organisation: mongoose.Schema.Types.ObjectId;
 }
