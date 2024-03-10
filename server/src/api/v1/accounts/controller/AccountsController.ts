@@ -329,15 +329,17 @@ export class AccountsController {
             logger.info(
                 `Account deleted successfully correlaionId:${correlationId}`
             );
-            return res
-                .status(StatusCodes.OK)
-                .json(
-                    new ApiResponse(
-                        StatusCodes.OK,
-                        result.account,
-                        "Account Deleted"
-                    )
-                );
+            return res.status(StatusCodes.OK).json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    {
+                        deletedAccount: result.account,
+                        noOfDealsDeleted: result.noOfDealsDeleted,
+                        noOfContactsDeleted: result.noOfContactsDeleted,
+                    },
+                    "Account Deleted"
+                )
+            );
         }
     };
 }

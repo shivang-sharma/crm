@@ -16,7 +16,7 @@ export class OrganisationsController {
     }
     CreateOrganisation = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `CreateOrganisation request recieved for correlationId: ${correlationId}`
         );
@@ -43,7 +43,7 @@ export class OrganisationsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { name } = validationResult.data;
             logger.info(
                 `Validation successfull for CreateOrganisation request payload for correlationId: ${correlationId}`
@@ -53,7 +53,7 @@ export class OrganisationsController {
             );
             const result = await this.service.createOrganisationService(
                 correlationId,
-                user,
+                currentUser,
                 name
             );
             logger.info(
@@ -95,7 +95,7 @@ export class OrganisationsController {
     };
     GetOneOrganisation = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetOneOrganisation request recieved for correlationId: ${correlationId}`
         );
@@ -119,7 +119,7 @@ export class OrganisationsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { organisationId } = validationResult.data;
             logger.info(
                 `Validation successfull for GetOneOrganisation request payload for correlationId: ${correlationId}`
@@ -129,7 +129,7 @@ export class OrganisationsController {
             );
             const result = await this.service.getOneOrganisationService(
                 correlationId,
-                user,
+                currentUser,
                 organisationId
             );
             logger.info(
@@ -168,7 +168,7 @@ export class OrganisationsController {
     };
     ChangeOwner = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `ChangeOwner request recieved for correlationId: ${correlationId}`
         );
@@ -193,7 +193,7 @@ export class OrganisationsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { newOwner, organisationId } = validationResult.data;
             logger.info(
                 `Validation successfull for ChangeOwner request payload for correlationId:${correlationId}`
@@ -203,7 +203,7 @@ export class OrganisationsController {
             );
             const result = await this.service.changeOwnerService(
                 correlationId,
-                user,
+                currentUser,
                 organisationId,
                 newOwner
             );
@@ -212,7 +212,7 @@ export class OrganisationsController {
             );
             if (result.notAuthorized) {
                 logger.error(
-                    `User does not have sufficient privileges to change the org owner role:${user.role}, user.organisation:${user.organisation}, organisation:${organisationId}, for correlationId:${correlationId}`
+                    `User does not have sufficient privileges to change the org owner role:${currentUser.role}, user.organisation:${currentUser.organisation}, organisation:${organisationId}, for correlationId:${correlationId}`
                 );
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
@@ -276,8 +276,8 @@ export class OrganisationsController {
         }
     };
     DeleteOrganisation = async (req: CustomRequest, res: Response) => {
-        const correlationId = res.getHeader("X-CorrelationId");
-        const user = req.user;
+        const correlationId = res.getHeader("X-CorrelationId") as string;
+        const currentUser = req.user;
         logger.info(
             `DeleteOrganisation request recieved for correlationId: ${correlationId}`
         );
@@ -301,7 +301,7 @@ export class OrganisationsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { organisationId } = validationResult.data;
             logger.info(
                 `Validation successfull for DeleteOrganisation request payload for correlationId: ${correlationId}`
@@ -309,7 +309,52 @@ export class OrganisationsController {
             logger.info(
                 `Attempting to call deleteOrganisationService for correlationId: ${correlationId}`
             );
-            // TODO: make to service
+            const result = await this.service.deleteOrganisationService(
+                correlationId,
+                currentUser,
+                organisationId
+            );
+            if (result.notFound) {
+                throw new ApiError(
+                    StatusCodes.NOT_FOUND,
+                    "Organisation not found",
+                    true
+                );
+            }
+            if (result.notAuthorized) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "User does not have sufficient privileges to perform the action, action denied",
+                    true
+                );
+            }
+            if (result.userDoesNotBelongToTheOrg) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "User does not belong to the organisation, action denied",
+                    true
+                );
+            }
+            if (result.failed) {
+                throw new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    "Failed to delete for some unknown reason",
+                    true
+                );
+            }
+            logger.info(
+                `Successfully delete the organisation for correlationId:${correlationId}`
+            );
+            return res.status(StatusCodes.OK).json(
+                new ApiResponse(StatusCodes.OK, {
+                    deletedOrgnisation: result.deletedOrganisation,
+                    noOfAccountsDeleted: result.noOfAccountsDeleted,
+                    noOfContactsDeleted: result.noOfContactsDeleted,
+                    noOfDealsDeleted: result.noOfDealsDeleted,
+                    noOfLeadsDeleted: result.noOfLeadsDeleted,
+                    noOfUserRemovedFromOrg: result.noOfUserRemovedFromOrg,
+                })
+            );
         }
     };
 }

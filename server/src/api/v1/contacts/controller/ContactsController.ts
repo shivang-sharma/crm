@@ -384,15 +384,16 @@ export class ContactsController {
             logger.info(
                 `Contact deleted successfully correlaionId:${correlationId}`
             );
-            return res
-                .status(StatusCodes.OK)
-                .json(
-                    new ApiResponse(
-                        StatusCodes.OK,
-                        result.contact,
-                        "Contact delete successfully"
-                    )
-                );
+            return res.status(StatusCodes.OK).json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    {
+                        deletedContact: result.contact,
+                        noOfDealsModified: result.noOfDealsModified,
+                    },
+                    "Contact delete successfully"
+                )
+            );
         }
     };
 }

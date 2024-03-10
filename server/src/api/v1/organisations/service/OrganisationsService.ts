@@ -2,12 +2,18 @@ import { IOrganisations, IUsers } from "@/database";
 import { ROLE } from "@/database/enums/ERole";
 import {
     CreateNewOrganisation,
+    DeleteAccountsByOrganisationId,
+    DeleteDealsByOrganisationId,
+    DeleteOrganisationById,
     FindOneOrganisationById,
     FindOneUserById,
     FindOrganisationByIdAndUpdateOwner,
     FindUserByIdAndUpdateOrganisationAndRole,
     FindUserByIdAndUpdateRole,
+    FindUserByOrganisationIdAndUpdateOrganisationAndRole,
 } from "@/database/queries";
+import { DeleteContactByOrganisationId } from "@/database/queries/ContactQueries";
+import { DeleteLeadByOrganisationId } from "@/database/queries/LeadQueries";
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
@@ -16,7 +22,7 @@ import mongoose, { SchemaTypes } from "mongoose";
 export class OrganisationsService {
     async createOrganisationService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         name: string
     ) {
         // Starting transaction
@@ -31,28 +37,28 @@ export class OrganisationsService {
             // if user is member, owner or read_only of any organisatio then reject the request
             // because the user can only either be a member or admin of an org
             if (
-                (user.role === ROLE.ADMIN ||
-                    user.role === ROLE.MEMBER ||
-                    user.role === ROLE.READ_ONLY) &&
-                user.organisation
+                (currentUser.role === ROLE.ADMIN ||
+                    currentUser.role === ROLE.MEMBER ||
+                    currentUser.role === ROLE.READ_ONLY) &&
+                currentUser.organisation
             ) {
                 response.alreadyAssociatedWithOrg = true;
                 response.failed = true;
                 logger.warn(
-                    `Organisation creation failed because user is already associated with an Org. User: ${user.toJSON()} correlationId: ${correlationId} `
+                    `Organisation creation failed because currentUser is already associated with an Org. currentUser: ${currentUser.toJSON()} correlationId: ${correlationId} `
                 );
                 return response;
             }
             const createdOrg = await CreateNewOrganisation(
                 name,
-                new mongoose.SchemaTypes.ObjectId(user._id)
+                new mongoose.SchemaTypes.ObjectId(currentUser._id)
             );
             logger.info(
                 `Organisation created ${createdOrg.toJSON()} correlationId: ${correlationId}`
             );
-            // update user with the org id and role as owner
+            // update currentUser with the org id and role as owner
             const updatedUser = await FindUserByIdAndUpdateOrganisationAndRole(
-                user.id,
+                currentUser.id,
                 createdOrg._id,
                 ROLE.ADMIN
             );
@@ -86,7 +92,7 @@ export class OrganisationsService {
     }
     async getOneOrganisationService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         organisationId: string
     ) {
         try {
@@ -95,14 +101,15 @@ export class OrganisationsService {
                 notFound: false,
                 org: null,
             };
-            // if user is not associated with the organisation then reject the request
+            // if currentUser: is not associated with the organisation then reject the request
             // because not allowed to access the organisation information if not associated with it
             if (
-                user.organisation !== new SchemaTypes.ObjectId(organisationId)
+                currentUser.organisation !==
+                new SchemaTypes.ObjectId(organisationId)
             ) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User tried to access organisation, it is not associated with. User: ${user.toJSON()}, organisationId: ${organisationId}, correlationId: ${correlationId} `
+                    `User tried to access organisation, it is not associated with. currentUser: ${currentUser.toJSON()}, organisationId: ${organisationId}, correlationId: ${correlationId} `
                 );
                 return response;
             }
@@ -136,7 +143,7 @@ export class OrganisationsService {
     }
     async changeOwnerService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         organisationId: string,
         newOwnerId: string
     ) {
@@ -153,12 +160,15 @@ export class OrganisationsService {
                 newOwner: null,
             };
             const orgObjectId = new SchemaTypes.ObjectId(organisationId);
-            // if the user does not have ADMIN role then reject request
+            // if the currentUser does not have ADMIN role then reject request
             // because need to be ADMIN to change the owner
-            if (user.role !== ROLE.ADMIN || user.organisation !== orgObjectId) {
+            if (
+                currentUser.role !== ROLE.ADMIN ||
+                currentUser.organisation !== orgObjectId
+            ) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User does not have sufficient privileges to change the owner of organisationId: ${organisationId}, user:${user.toJSON()} for correlationId:${correlationId}`
+                    `User does not have sufficient privileges to change the owner of organisationId: ${organisationId}, currentUser:${currentUser.toJSON()} for correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -233,13 +243,124 @@ export class OrganisationsService {
     }
     async deleteOrganisationService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         organisationId: string
     ) {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            // TODO: Delete everything related to organisation
+            const response: DeleteOrganisationServiceResult = {
+                failed: false,
+                notAuthorized: false,
+                notFound: false,
+                userDoesNotBelongToTheOrg: false,
+                noOfLeadsDeleted: 0,
+                noOfDealsDeleted: 0,
+                noOfContactsDeleted: 0,
+                noOfAccountsDeleted: 0,
+                noOfUserRemovedFromOrg: 0,
+                deletedOrganisation: null,
+            };
+            // If user is not the owner and ADMIN then reject request
+            if (currentUser.role !== ROLE.ADMIN) {
+                response.notAuthorized = true;
+                logger.warn(
+                    `User does not have ADMIN role to perform this action, action denied userRole:${currentUser.role} for correlationId:${correlationId}`
+                );
+                return response;
+            }
+            if (
+                currentUser.organisation !==
+                new SchemaTypes.ObjectId(organisationId)
+            ) {
+                response.userDoesNotBelongToTheOrg = true;
+                logger.warn(
+                    `User does not belong to the organisation, action denied userOrg:${currentUser.organisation} orgId:${organisationId} for correlationId:${correlationId}`
+                );
+                return response;
+            }
+            const organisation = await FindOneOrganisationById(
+                new SchemaTypes.ObjectId(organisationId)
+            );
+            // if org does not exist
+            if (!organisation) {
+                response.notFound = true;
+                logger.warn(`Organisation not found orgId:${organisationId}`);
+                return response;
+            }
+            // if the currentUser is not the owner then reject
+            if (organisation.owner !== currentUser.id) {
+                response.notAuthorized = true;
+                logger.warn(
+                    `User is not the owner of the organisation, action denied correlationId ${correlationId}`
+                );
+                return response;
+            }
+            // Delete all the leads associated with the organisation
+            const leadDeletedResult = await DeleteLeadByOrganisationId(
+                organisationId
+            );
+            logger.info(
+                `All the leads deleted associated with organisationId:${organisationId} leadDeleteResult:${JSON.stringify(
+                    leadDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfLeadsDeleted = leadDeletedResult.deletedCount;
+            // Delete all the deals associated with the organisation
+            const dealsDeletedResult = await DeleteDealsByOrganisationId(
+                organisationId
+            );
+            logger.info(
+                `All the deals deleted associated with organisationId:${organisationId} dealsDeleteResult:${JSON.stringify(
+                    dealsDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfDealsDeleted = dealsDeletedResult.deletedCount;
+            // Delete all the contacts associated with the organisation
+            const contactDeletedResult = await DeleteContactByOrganisationId(
+                organisationId
+            );
+            logger.info(
+                `All the contacts deleted associated with organisationId:${organisationId} contactDeleteResult:${JSON.stringify(
+                    contactDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfContactsDeleted = contactDeletedResult.deletedCount;
+            // Delete all the accounts associated with the organisation
+            const accountDeletedResult = await DeleteAccountsByOrganisationId(
+                organisationId
+            );
+            logger.info(
+                `All the accounts deleted associated with organisationId:${organisationId} accountDeleteResult:${JSON.stringify(
+                    accountDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfAccountsDeleted = accountDeletedResult.deletedCount;
+            // Remove all the users from the organisation
+            const userUpdateResult =
+                await FindUserByOrganisationIdAndUpdateOrganisationAndRole(
+                    organisationId,
+                    undefined,
+                    undefined
+                );
+            logger.info(
+                `All the users removed from the organisation organisationId:${organisationId} usersRemovedResult:${JSON.stringify(
+                    userUpdateResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfUserRemovedFromOrg = userUpdateResult.modifiedCount;
+            response.deletedOrganisation = organisation;
+            const deleteResult = await DeleteOrganisationById(organisationId);
+            if (deleteResult.deletedCount !== 1) {
+                await session.abortTransaction();
+                await session.endSession();
+                response.failed = true;
+                return response;
+            }
+            await session.commitTransaction();
+            await session.endSession();
+            logger.info(`Delete organisation transation commited`);
+            return response;
         } catch (error) {
             await session.abortTransaction();
             await session.endSession();
@@ -280,4 +401,17 @@ export type ChangeOwnerServiceResult = {
     failed: boolean;
     org: IOrganisations | null;
     newOwner: IUsers | null;
+};
+
+export type DeleteOrganisationServiceResult = {
+    failed: boolean;
+    notAuthorized: boolean;
+    notFound: boolean;
+    userDoesNotBelongToTheOrg: boolean;
+    noOfLeadsDeleted: number;
+    noOfDealsDeleted: number;
+    noOfContactsDeleted: number;
+    noOfAccountsDeleted: number;
+    noOfUserRemovedFromOrg: number;
+    deletedOrganisation: IOrganisations | null;
 };

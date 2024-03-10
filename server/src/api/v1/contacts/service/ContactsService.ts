@@ -1,6 +1,9 @@
 import { IContacts, IUsers } from "@/database";
 import { ROLE } from "@/database/enums";
-import { FindAccountById } from "@/database/queries";
+import {
+    FindAccountById,
+    RemoveContactFromDealsByContactId,
+} from "@/database/queries";
 import { logger } from "@/utils/logger";
 import phone from "phone";
 import {
@@ -12,6 +15,7 @@ import {
 } from "@/database/queries/ContactQueries";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "@/utils/error/ApiError";
+import mongoose from "mongoose";
 
 export class ContactsService {
     async createContactService(
@@ -315,9 +319,11 @@ export class ContactsService {
         user: IUsers,
         contactId: string
     ) {
+        const session = await mongoose.startSession();
         try {
             const response: DeleteOneContactServiceResult = {
                 contactBelongsToDifferentOrganisation: false,
+                noOfDealsModified: 0,
                 notFound: false,
                 contact: null,
                 failed: false,
@@ -346,6 +352,17 @@ export class ContactsService {
                 );
                 return response;
             }
+            session.startTransaction();
+            // Remove the contact from the any of the deals it is associated with
+            const removedContactFromDealsResult =
+                await RemoveContactFromDealsByContactId(contactId);
+            response.noOfDealsModified =
+                removedContactFromDealsResult.modifiedCount;
+            logger.info(
+                `Removed contact from all the deals it was associated with removeResult:${JSON.stringify(
+                    removedContactFromDealsResult
+                )} contactId${contactId} for correlationId:${correlationId}`
+            );
             const deletedResult = await DeleteOneContactById(contactId);
             if (
                 deletedResult.deletedCount === 0 ||
@@ -355,14 +372,29 @@ export class ContactsService {
                     `Couldn't delete the contact for unknown reason deleteResult:${deletedResult} contactId:${contactId}, for correlationId:${correlationId}`
                 );
                 response.failed = true;
+                await session.abortTransaction();
+                await session.endSession();
+                logger.info(
+                    `Delete contact transaction aborted for correlationId:${correlationId}`
+                );
                 return response;
             }
             logger.info(
                 `Contact deleted successfully contactId:${contactId}, correlationId:${correlationId}`
             );
             response.contact = contact;
+            await session.commitTransaction();
+            await session.endSession();
+            logger.info(
+                `Delete contact transaction commited successfully for correlationId:${correlationId}`
+            );
             return response;
         } catch (error) {
+            await session.abortTransaction();
+            await session.endSession();
+            logger.info(
+                `Delete contact transaction aborted for correlationId:${correlationId}`
+            );
             throw new ApiError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 "Something went wrong",
@@ -394,6 +426,7 @@ export type GetOneContactServiceResult = {
 
 export type DeleteOneContactServiceResult = {
     contactBelongsToDifferentOrganisation: boolean;
+    noOfDealsModified: number;
     notFound: boolean;
     contact: IContacts | null;
     failed: boolean;

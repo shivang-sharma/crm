@@ -31,3 +31,28 @@ export async function DeleteOneDealById(id: string) {
     });
     return deletedResult;
 }
+export async function DeleteDealsByOrganisationId(organisationId: string) {
+    const deletedResult = await Deals.deleteMany({
+        organisation: organisationId,
+    });
+    return deletedResult;
+}
+export async function DeleteDealsByAccountId(accountId: string) {
+    const deletedResult = await Deals.deleteMany({
+        account: accountId,
+    });
+    return deletedResult;
+}
+export async function RemoveContactFromDealsByContactId(contactId: string) {
+    const updatedResult = await Deals.updateMany(
+        {
+            contacts: contactId,
+        },
+        {
+            $pull: {
+                contacts: contactId,
+            },
+        }
+    );
+    return updatedResult;
+}

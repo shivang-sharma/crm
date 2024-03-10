@@ -40,3 +40,10 @@ export async function FindOrganisationByIdAndUpdateOwner(
     );
     return org;
 }
+
+export async function DeleteOrganisationById(organisationId: string) {
+    const deleteResult = await Organisations.deleteOne({
+        _id: organisationId,
+    });
+    return deleteResult
+}

@@ -33,3 +33,9 @@ export async function DeleteOneAccountById(id: string) {
     });
     return deletedResult;
 }
+export async function DeleteAccountsByOrganisationId(organisationId: string) {
+    const deletedResult = await Accounts.deleteMany({
+        organisation: organisationId,
+    });
+    return deletedResult;
+}

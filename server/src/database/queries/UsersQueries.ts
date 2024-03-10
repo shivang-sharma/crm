@@ -80,6 +80,24 @@ export async function FindUserByIdAndUpdateOrganisationAndRole(
     );
     return user;
 }
+export async function FindUserByOrganisationIdAndUpdateOrganisationAndRole(
+    organisationId: string,
+    organisation: Schema.Types.ObjectId | undefined,
+    role: ROLE | undefined
+) {
+    const updateResult = await Users.updateMany(
+        {
+            organisation: organisationId,
+        },
+        {
+            $set: {
+                role: role,
+                organisation: organisation,
+            },
+        }
+    );
+    return updateResult;
+}
 export async function FindUserByIdAndUpdateRole(userId: string, role: ROLE) {
     const user = await Users.findByIdAndUpdate(
         {

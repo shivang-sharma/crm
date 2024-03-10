@@ -36,7 +36,7 @@ export async function FindLeadByIdAndUpdate(
     return updatedLead;
 }
 
-export async function FindManyLeadsAndRemoveOwner(ownerId: string, ) {
+export async function FindManyLeadsAndRemoveOwner(ownerId: string) {
     const updateResult = await Leads.updateMany(
         {
             owner: ownerId,
@@ -46,4 +46,10 @@ export async function FindManyLeadsAndRemoveOwner(ownerId: string, ) {
         }
     );
     return updateResult;
+}
+export async function DeleteLeadByOrganisationId(organisationId: string) {
+    const deletedResult = await Leads.deleteMany({
+        organisation: organisationId,
+    });
+    return deletedResult;
 }

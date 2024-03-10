@@ -32,3 +32,15 @@ export async function DeleteOneContactById(id: string) {
     });
     return deletedResult;
 }
+export async function DeleteContactByOrganisationId(organisationId: string) {
+    const deletedResult = await Contacts.deleteMany({
+        organisation: organisationId,
+    });
+    return deletedResult;
+}
+export async function DeleteContactByAccountId(accountId: string) {
+    const deletedResult = await Contacts.deleteMany({
+        account: accountId,
+    });
+    return deletedResult;
+}

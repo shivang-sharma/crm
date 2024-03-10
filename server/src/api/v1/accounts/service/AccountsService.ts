@@ -2,14 +2,17 @@ import { IAccounts, IUsers } from "@/database";
 import { ROLE } from "@/database/enums";
 import {
     CreateAccount,
+    DeleteDealsByAccountId,
     DeleteOneAccountById,
     FindAccountById,
     FindAccountByIdAndUpdate,
     FindManyAccountsByOrganisationId,
 } from "@/database/queries";
+import { DeleteContactByAccountId } from "@/database/queries/ContactQueries";
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 
 export class AccountsService {
     async createAccountService(
@@ -231,8 +234,12 @@ export class AccountsService {
         user: IUsers,
         accountId: string
     ) {
+        const session = await mongoose.startSession();
+        session.startTransaction();
         try {
             const response: DeleteOneAccountServiceResult = {
+                noOfContactsDeleted: 0,
+                noOfDealsDeleted: 0,
                 accountBelongsToDifferentOrganisation: false,
                 notAuthorized: false,
                 notFound: false,
@@ -262,6 +269,25 @@ export class AccountsService {
                 );
                 return response;
             }
+            // delete all the deals associated with the account
+            const dealsDeletedResult = await DeleteDealsByAccountId(accountId);
+            logger.info(
+                `All the deals deleted associated with accountId:${accountId} dealsDeleteResult:${JSON.stringify(
+                    dealsDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfDealsDeleted = dealsDeletedResult.deletedCount;
+            // delete all the contacts associated with the account
+            const contactDeletedResult = await DeleteContactByAccountId(
+                accountId
+            );
+            logger.info(
+                `All the contacts deleted associated with accountId:${accountId} contactDeleteResult:${JSON.stringify(
+                    contactDeletedResult
+                )} correlationId:${correlationId}`
+            );
+            response.noOfContactsDeleted = contactDeletedResult.deletedCount;
+
             const deletedResult = await DeleteOneAccountById(accountId);
             if (
                 deletedResult.deletedCount === 0 ||
@@ -271,14 +297,30 @@ export class AccountsService {
                     `Couldn't delete the account for unknown reason deleteResult:${deletedResult} accountId:${accountId}, for correlationId:${correlationId}`
                 );
                 response.failed = true;
+
+                await session.abortTransaction();
+                await session.endSession();
+                logger.warn(
+                    `Delete account transaction aborted for correlationId:${correlationId}`
+                );
                 return response;
             }
             logger.info(
                 `Account deleted successfully accountId:${accountId}, correlationId:${correlationId}`
             );
             response.account = account;
+            await session.commitTransaction();
+            await session.endSession();
+            logger.warn(
+                `Delete account transaction commited for correlationId:${correlationId}`
+            );
             return response;
         } catch (error) {
+            await session.abortTransaction();
+            await session.endSession();
+            logger.warn(
+                `Delete account transaction aborted for correlationId:${correlationId}`
+            );
             throw new ApiError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 "Something went wrong",
@@ -310,5 +352,7 @@ export type DeleteOneAccountServiceResult = {
     accountBelongsToDifferentOrganisation: boolean;
     notFound: boolean;
     failed: boolean;
+    noOfDealsDeleted: number;
+    noOfContactsDeleted: number;
     account: IAccounts | null;
 };
