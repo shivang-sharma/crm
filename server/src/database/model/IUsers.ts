@@ -9,7 +9,7 @@ export interface IUsers extends Document {
     };
     email: string;
     password: string;
-    organisation: mongoose.Types.ObjectId;
+    organisation: mongoose.Schema.Types.ObjectId;
     refreshToken: string;
     role: ROLE;
     isPasswordCorrect(password: string): Promise<boolean>;

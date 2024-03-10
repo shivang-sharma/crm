@@ -49,7 +49,7 @@ const usersSchema = new Schema<IUsers>(
             type: String,
         },
         role: {
-            type: Number,
+            type: String,
             enum: ROLE,
         },
     },
