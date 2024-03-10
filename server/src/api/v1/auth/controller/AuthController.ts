@@ -25,7 +25,7 @@ export class AuthController {
             password: req.body.password,
         };
         logger.info(
-            `Validating the signup request payload using zod schema payload: ${userInput} correlationId: ${correlationId}`
+            `Validating the SignUp request payload using zod schema, payload: ${userInput} correlationId: ${correlationId}`
         );
         const validationResult = ZSignUpInputSchema.safeParse(userInput);
         if (!validationResult.success) {
@@ -79,7 +79,7 @@ export class AuthController {
             );
         }
         logger.info(
-            `User registered Successfully user: ${result.user} for correlationId: ${correlationId}`
+            `User registered Successfully user: ${result.user?.toJSON()} for correlationId: ${correlationId}`
         );
         return res
             .status(StatusCodes.CREATED)
