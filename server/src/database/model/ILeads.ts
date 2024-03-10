@@ -8,7 +8,12 @@ export interface ILeads extends Document {
     company: string;
     title: string;
     email: string;
-    phone: string;
+    phone: {
+        countryCode: string;
+        countryIso3: string;
+        number: string;
+    };
     location: string;
     comments: string;
+    organisation: mongoose.Schema.Types.ObjectId;
 }

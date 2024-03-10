@@ -28,13 +28,23 @@ const leadsSchema = new Schema<ILeads>(
             ref: "Users",
         },
         phone: {
-            type: String,
-            reqjuired: true,
-            unique: true,
+            countryCode: {
+                type: String,
+                required: true,
+            },
+            countryIso3: {
+                type: String,
+                required: true,
+            },
+            number: {
+                type: String,
+                required: true,
+                unique: true,
+            },
         },
         title: { type: String },
         status: {
-            type: Number,
+            type: String,
             enum: LEAD_STATUS,
             default: LEAD_STATUS.NEW_LEAD,
             index: true,
@@ -43,6 +53,10 @@ const leadsSchema = new Schema<ILeads>(
             type: String,
             min: 50,
             max: 500,
+        },
+        organisation: {
+            type: Schema.Types.ObjectId,
+            ref: "Organisations",
         },
     },
     {
