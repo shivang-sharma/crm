@@ -1,6 +1,9 @@
+import z from "zod";
+
 export enum SIZE {
-    MICRO,
-    SMALL,
-    MID,
-    LARGE,
+    MICRO = "MICRO",
+    SMALL = "SMALL",
+    MID = "MID",
+    LARGE = "LARGE",
 }
+export const ZSIZE = z.nativeEnum(SIZE);

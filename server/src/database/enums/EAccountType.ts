@@ -1,6 +1,9 @@
+import z from "zod";
+
 export enum ACCOUNT_TYPE {
-    CUSTOMER,
-    PARTNER,
-    VENDOR,
-    PROSPECT,
+    CUSTOMER = "CUSTOMER",
+    PARTNER = "PARTNER",
+    VENDOR = "VENDOR",
+    PROSPECT = "PROSPECT",
 }
+export const ZACCOUNT_TYPE = z.nativeEnum(ACCOUNT_TYPE);
