@@ -165,7 +165,7 @@ export class DealsService {
                 priority,
                 stage,
                 value_gt,
-                value_lt
+                value_lt,
                 limit,
                 page
             );

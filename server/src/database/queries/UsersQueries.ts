@@ -1,4 +1,4 @@
-import { FilterQuery, Schema } from "mongoose";
+import { Schema } from "mongoose";
 import { Users } from "../schema/UsersSchema";
 import { ROLE } from "../enums/ERole";
 import { IUsers } from "../model/IUsers";
