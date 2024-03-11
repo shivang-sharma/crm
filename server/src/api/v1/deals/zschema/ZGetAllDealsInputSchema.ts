@@ -1,4 +1,5 @@
 import { ZPRIORITY, ZSTAGE } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZGetAllDealsInputSchema = z.object({
@@ -36,16 +37,28 @@ export const ZGetAllDealsInputSchema = z.object({
             description: "Owner",
             invalid_type_error: "Need to be a valid string",
         })
-        .uuid({
-            message: "Owner to be a valid UUId",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     account: z
         .string({
             description: "Account with which deal associated",
-            invalid_type_error: "Account need to be a valid uuid",
+            invalid_type_error: "Account need to be a valid ObjectId",
         })
-        .uuid({ message: "Account need to be a valid uuid" })
+        .refine((account) => {
+            try {
+                new mongoose.Types.ObjectId(account);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        })
         .optional(),
     value_gt: z
         .number({

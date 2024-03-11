@@ -227,7 +227,7 @@ export class LeadsController {
             );
         }
         if (currentUser) {
-            const { limit, page, comments, name, owner, status } =
+            const { limit, page, name, owner, status } =
                 validationResult.data;
             logger.info(
                 `Validation for GetAllLeads request payload successfull for correlationId:${correlationId}`
@@ -242,7 +242,6 @@ export class LeadsController {
                     currentUser,
                     limit,
                     page,
-                    comments,
                     name,
                     owner,
                     status

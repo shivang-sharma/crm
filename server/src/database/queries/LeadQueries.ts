@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { ILeads } from "../model/ILeads";
 import { Leads } from "../schema/LeadsSchema";
 
@@ -29,10 +29,9 @@ export async function FindManyLeadsByOrganisationId(
 }
 
 export async function FindManyLeadsBy(
-    organisationId: Schema.Types.ObjectId,
+    organisationId: mongoose.Types.ObjectId,
     limit: number,
     page: number,
-    comments: string | undefined,
     name: string | undefined,
     owner: string | undefined,
     status: string | undefined
@@ -44,11 +43,6 @@ export async function FindManyLeadsBy(
             },
             {
                 $or: [
-                    {
-                        $text: {
-                            $search: comments ? comments : "",
-                        },
-                    },
                     {
                         $text: {
                             $search: name ? name : "",
@@ -83,7 +77,7 @@ export async function FindManyLeadsAndRemoveOwner(ownerId: string) {
             owner: ownerId,
         },
         {
-            owner: undefined,
+            owner: null,
         }
     );
     return updateResult;

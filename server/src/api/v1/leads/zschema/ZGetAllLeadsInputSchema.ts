@@ -1,4 +1,5 @@
 import { ZLEAD_STATUS } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZGetAllLeadsInputSchema = z.object({
@@ -20,11 +21,15 @@ export const ZGetAllLeadsInputSchema = z.object({
             description: "Owner(Sales Representative) for the lead",
             invalid_type_error: "Owner need to be a valid UUID",
         })
-        .uuid({
-            message: "Owner need to be a valid UUID",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
-    comments: z.string().optional(),
     page: z.number().min(1).optional().default(1),
     limit: z.number().min(10).max(50).optional().default(10),
 });

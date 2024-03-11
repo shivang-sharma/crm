@@ -1,4 +1,5 @@
 import { ZCURRENCY, ZPRIORITY, ZSTAGE } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZCreateDealInputSchema = z.object({
@@ -25,8 +26,13 @@ export const ZCreateDealInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "Owner is required",
         })
-        .uuid({
-            message: "Owner to be a valid UUId",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }),
     value: z.object({
         amount: z.number(),
@@ -50,8 +56,13 @@ export const ZCreateDealInputSchema = z.object({
                     required_error:
                         "At least 1 contact associated with the deal is required",
                 })
-                .uuid({
-                    message: "Need to be a valid array of uuids",
+                .refine((contact) => {
+                    try {
+                        new mongoose.Types.ObjectId(contact);
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
                 })
         )
         .min(1, {
@@ -64,7 +75,14 @@ export const ZCreateDealInputSchema = z.object({
             invalid_type_error: "Account need to be a valid uuid",
             required_error: "Associate account is required",
         })
-        .uuid({ message: "Account need to be a valid uuid" }),
+        .refine((account) => {
+            try {
+                new mongoose.Types.ObjectId(account);
+                return true
+            } catch (error) {
+                return false;
+            }
+        }),
     priority: z
         .string({
             description: "Priority 'HIGH' | 'LOW' | 'MEDIUM'",

@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IDeals } from "../model/IDeals";
 import { Deals } from "../schema/DealsSchema";
 
@@ -15,7 +15,7 @@ export async function FindManyDealsByOrganisationId(
     return deals;
 }
 export async function FindManyDealsBy(
-    organisationId: Schema.Types.ObjectId,
+    organisationId: mongoose.Types.ObjectId,
     account: string | undefined,
     close_probability_gt: number,
     close_probability_lt: number,
@@ -79,13 +79,13 @@ export async function FindManyDealsBy(
         },
         {
             score: {
-                $meta: "textscore",
+                $meta: "textScore",
             },
         }
     )
         .sort({
             score: {
-                $meta: "textscore",
+                $meta: "textScore",
             },
         })
         .limit(limit)

@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { Users } from "../schema/UsersSchema";
 import { ROLE } from "../enums/ERole";
 import { IUsers } from "../model/IUsers";
@@ -58,8 +58,8 @@ export async function ExpireRefreshTokenById(id: string) {
 
 export async function FindUserByIdAndUpdateOrganisationAndRole(
     userId: string,
-    organisation: Schema.Types.ObjectId | undefined,
-    role: ROLE | undefined
+    organisation: mongoose.Types.ObjectId | null,
+    role: ROLE | null
 ) {
     const user = await Users.findByIdAndUpdate(
         {
@@ -80,8 +80,8 @@ export async function FindUserByIdAndUpdateOrganisationAndRole(
 }
 export async function FindUserByOrganisationIdAndUpdateOrganisationAndRole(
     organisationId: string,
-    organisation: Schema.Types.ObjectId | undefined,
-    role: ROLE | undefined
+    organisation: Schema.Types.ObjectId | null,
+    role: ROLE | null
 ) {
     const updateResult = await Users.updateMany(
         {
@@ -122,7 +122,7 @@ export async function FindManyUsersByOrganisationId(
     return users;
 }
 export async function FindManyUsersBy(
-    organisationId: Schema.Types.ObjectId,
+    organisationId: mongoose.Types.ObjectId,
     limit: number,
     page: number,
     email: string | undefined,
@@ -150,7 +150,7 @@ export async function FindManyUsersBy(
         },
         {
             score: {
-                $meta: "textscore",
+                $meta: "textScore",
             },
         }
     )
@@ -168,7 +168,13 @@ export async function FindUserByIdAndUpdate(
     id: string,
     updateData: Partial<IUsers>
 ) {
-    const updatedUser = await Users.findByIdAndUpdate(id, updateData);
+    const updatedUser = await Users.findByIdAndUpdate(
+        { _id: id },
+        { $set: updateData },
+        {
+            new: true,
+        }
+    ).select("-password -refreshToken");
     return updatedUser;
 }
 

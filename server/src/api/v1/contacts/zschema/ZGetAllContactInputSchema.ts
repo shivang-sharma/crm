@@ -1,4 +1,5 @@
 import { ZCONTACT_STATUS, ZCONTACT_TYPE, ZPRIORITY } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZGetAllContactInputSchema = z.object({
@@ -43,10 +44,15 @@ export const ZGetAllContactInputSchema = z.object({
     account: z
         .string({
             description: "Associated account",
-            invalid_type_error: "Account need to be a valid UUID",
+            invalid_type_error: "Account need to be a valid ObjectId",
         })
-        .uuid({
-            message: "Account need to be a valid UUID",
+        .refine((account) => {
+            try {
+                new mongoose.Types.ObjectId(account);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     page: z.number().min(1).optional().default(1),

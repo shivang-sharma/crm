@@ -1,4 +1,5 @@
 import { ZACCOUNT_TYPE, ZPRIORITY, ZSIZE } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZUpdateAccountInputSchema = z.object({
@@ -8,8 +9,13 @@ export const ZUpdateAccountInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "AccountId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((accountId) => {
+            try {
+                new mongoose.Types.ObjectId(accountId);
+                return true
+            } catch (error) {
+                return false;
+            }
         }),
     name: z
         .string({

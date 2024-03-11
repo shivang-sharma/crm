@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZUpdateUserInputSchema = z.object({
@@ -7,8 +8,13 @@ export const ZUpdateUserInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "UserId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((userId) => {
+            try {
+                new mongoose.Types.ObjectId(userId);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }),
     name: z
         .object({
@@ -27,5 +33,5 @@ export const ZUpdateUserInputSchema = z.object({
                 .min(1, "Last Name cannot be empty")
                 .optional(),
         })
-        .optional(),
+        .refine((obj) => obj.fname || obj.lname),
 });

@@ -17,7 +17,7 @@ import { DeleteLeadByOrganisationId } from "@/database/queries/LeadQueries";
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
-import mongoose, { SchemaTypes } from "mongoose";
+import mongoose from "mongoose";
 
 export class OrganisationsService {
     async createOrganisationService(
@@ -51,7 +51,7 @@ export class OrganisationsService {
             }
             const createdOrg = await CreateNewOrganisation(
                 name,
-                new mongoose.SchemaTypes.ObjectId(currentUser._id)
+                currentUser._id
             );
             logger.info(
                 `Organisation created ${createdOrg.toJSON()} correlationId: ${correlationId}`
@@ -103,10 +103,7 @@ export class OrganisationsService {
             };
             // if currentUser: is not associated with the organisation then reject the request
             // because not allowed to access the organisation information if not associated with it
-            if (
-                currentUser.organisation !==
-                new SchemaTypes.ObjectId(organisationId)
-            ) {
+            if (!currentUser.organisation.equals(organisationId)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User tried to access organisation, it is not associated with. currentUser: ${currentUser.toJSON()}, organisationId: ${organisationId}, correlationId: ${correlationId} `
@@ -114,7 +111,7 @@ export class OrganisationsService {
                 return response;
             }
             const org = await FindOneOrganisationById(
-                new SchemaTypes.ObjectId(organisationId)
+                new mongoose.Types.ObjectId(organisationId)
             );
             logger.info(
                 `Retrieved organisation with Id:${organisationId} organisation:${org?.toJSON()}, correlationId: ${correlationId}`
@@ -159,12 +156,11 @@ export class OrganisationsService {
                 org: null,
                 newOwner: null,
             };
-            const orgObjectId = new SchemaTypes.ObjectId(organisationId);
             // if the currentUser does not have ADMIN role then reject request
             // because need to be ADMIN to change the owner
             if (
                 currentUser.role !== ROLE.ADMIN ||
-                currentUser.organisation !== orgObjectId
+                !currentUser.organisation.equals(organisationId)
             ) {
                 response.notAuthorized = true;
                 logger.warn(
@@ -183,7 +179,7 @@ export class OrganisationsService {
             } else if (
                 // if the new owner already belong to a different organisation reject request
                 newOwner.organisation &&
-                newOwner.organisation !== orgObjectId
+                !newOwner.organisation.equals(organisationId)
             ) {
                 response.newOwnerBelongToDifferentOrg = true;
                 logger.warn(
@@ -193,8 +189,8 @@ export class OrganisationsService {
             }
             // Update owner for org
             const updatedOrg = await FindOrganisationByIdAndUpdateOwner(
-                orgObjectId,
-                new SchemaTypes.ObjectId(newOwnerId)
+                new mongoose.Types.ObjectId(organisationId),
+                new mongoose.Types.ObjectId(newOwnerId)
             );
             if (!updatedOrg) {
                 response.failed = true;
@@ -269,10 +265,7 @@ export class OrganisationsService {
                 );
                 return response;
             }
-            if (
-                currentUser.organisation !==
-                new SchemaTypes.ObjectId(organisationId)
-            ) {
+            if (!currentUser.organisation.equals(organisationId)) {
                 response.userDoesNotBelongToTheOrg = true;
                 logger.warn(
                     `User does not belong to the organisation, action denied userOrg:${currentUser.organisation} orgId:${organisationId} for correlationId:${correlationId}`
@@ -280,7 +273,7 @@ export class OrganisationsService {
                 return response;
             }
             const organisation = await FindOneOrganisationById(
-                new SchemaTypes.ObjectId(organisationId)
+                new mongoose.Types.ObjectId(organisationId)
             );
             // if org does not exist
             if (!organisation) {
@@ -289,10 +282,10 @@ export class OrganisationsService {
                 return response;
             }
             // if the currentUser is not the owner then reject
-            if (organisation.owner !== currentUser.id) {
+            if (!organisation.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is not the owner of the organisation, action denied correlationId ${correlationId}`
+                    `User is not the owner of the organisation, action denied organisationOwner:${organisation.owner} currentUserid:${currentUser.id} correlationId ${correlationId}`
                 );
                 return response;
             }
@@ -340,8 +333,8 @@ export class OrganisationsService {
             const userUpdateResult =
                 await FindUserByOrganisationIdAndUpdateOrganisationAndRole(
                     organisationId,
-                    undefined,
-                    undefined
+                    null,
+                    null
                 );
             logger.info(
                 `All the users removed from the organisation organisationId:${organisationId} usersRemovedResult:${JSON.stringify(

@@ -2,6 +2,7 @@ import z from "zod";
 import countries from "i18n-iso-countries";
 import phone from "phone";
 import { ZCONTACT_STATUS, ZCONTACT_TYPE, ZPRIORITY } from "@/database/enums";
+import mongoose from "mongoose";
 
 export const ZCreateContactInputSchema = z.object({
     name: z.string({
@@ -64,10 +65,15 @@ export const ZCreateContactInputSchema = z.object({
     account: z
         .string({
             description: "Associated account",
-            invalid_type_error: "Account need to be a valid UUID",
+            invalid_type_error: "Account need to be a valid ObjectId",
         })
-        .uuid({
-            message: "Account need to be a valid UUID",
+        .refine((account) => {
+            try {
+                new mongoose.Types.ObjectId(account);
+                return true
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     status: z

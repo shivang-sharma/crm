@@ -68,6 +68,13 @@ export class DealsController {
                 priority,
                 stage
             );
+            if (result.notAssociatedWithAnyOrg) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "User is not associated with any org, action denied",
+                    true
+                );
+            }
             if (result.notAuthorized) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,

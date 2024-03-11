@@ -71,7 +71,7 @@ export class UsersService {
                 );
                 return response;
             }
-            if (userObj.organisation !== currentUser.organisation) {
+            if (!userObj.organisation.equals(currentUser.organisation)) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
                     `User belong to a different organisation userOrg:${userObj.organisation} currentUserOrg:${currentUser.organisation}`
@@ -110,7 +110,7 @@ export class UsersService {
                 notFound: false,
             };
             if (currentUser.role !== ROLE.ADMIN) {
-                response.notAuthorized = false;
+                response.notAuthorized = true;
                 logger.warn(
                     `User not authorized to perform the action, userId:${currentUser.id} correlationId:${correlationId}`
                 );
@@ -124,7 +124,7 @@ export class UsersService {
                 );
                 return response;
             }
-            if (currentUser.organisation !== userObj.organisation) {
+            if (!currentUser.organisation.equals(userObj.organisation)) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
                     `User belongs to a different organisation userOrg${userObj.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -189,7 +189,7 @@ export class UsersService {
                 );
                 return response;
             }
-            if (userObj.organisation !== currentUser.organisation) {
+            if (!userObj.organisation.equals(currentUser.organisation)) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
                     `User belongs to a different organisation action denied, userOrg:${userObj.organisation} currentUserOrg:${currentUser.organisation} for correlationId:${correlationId}`
@@ -199,8 +199,8 @@ export class UsersService {
             session.startTransaction();
             const updatedUser = await FindUserByIdAndUpdateOrganisationAndRole(
                 userId,
-                undefined,
-                undefined
+                null,
+                null
             );
             if (!updatedUser) {
                 await session.abortTransaction();
@@ -279,7 +279,6 @@ export class UsersService {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 }).filter(([key, value]) => value !== undefined)
             );
-
             const updatedUser = await FindUserByIdAndUpdate(userId, userUpdate);
             if (!updatedUser) {
                 response.notFound = true;

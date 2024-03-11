@@ -1,4 +1,5 @@
 import { ZLEAD_STATUS } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZChangeStatusInputSchema = z.object({
@@ -8,8 +9,13 @@ export const ZChangeStatusInputSchema = z.object({
             invalid_type_error: "Need to be a valid UUID",
             required_error: "Lead Id is required",
         })
-        .uuid({
-            message: "Need to be a valid UUID",
+        .refine((userId) => {
+            try {
+                new mongoose.Types.ObjectId(userId);
+                return true
+            } catch (error) {
+                return false;
+            }
         }),
     status: z
         .string({

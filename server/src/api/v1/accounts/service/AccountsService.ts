@@ -74,7 +74,6 @@ export class AccountsService {
         currentUser: IUsers,
         limit: number,
         page: number,
-        industry: string | undefined,
         name: string | undefined,
         priority: string | undefined,
         size: string | undefined,
@@ -89,7 +88,6 @@ export class AccountsService {
                 currentUser.organisation,
                 limit,
                 page,
-                industry,
                 name,
                 priority,
                 size,
@@ -133,7 +131,7 @@ export class AccountsService {
                 return response;
             }
             // if the account belong to different org reject the request
-            if (account.organisation !== currentUser.organisation) {
+            if (!account.organisation.equals(currentUser.organisation)) {
                 response.accountBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -196,7 +194,7 @@ export class AccountsService {
                 return response;
             }
             // If user does not belong to the same org reject
-            if (currentUser.organisation !== account.organisation) {
+            if (!currentUser.organisation.equals(account.organisation)) {
                 response.accountBelongToDifferentOrg = true;
                 logger.warn(
                     `Account belong to a different organisation, action denied userOrg:${currentUser.organisation} accountOrg:${account.organisation} correlationId:${correlationId}`
@@ -276,7 +274,7 @@ export class AccountsService {
                 return response;
             }
             // if the account belong to different org reject the request
-            if (account.organisation !== currentUser.organisation) {
+            if (!account.organisation.equals(currentUser.organisation)) {
                 response.accountBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`

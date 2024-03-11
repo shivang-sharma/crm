@@ -1,19 +1,21 @@
-import { Schema } from "mongoose";
+import mongoose from "mongoose";
 import { Organisations } from "../schema/OrganisationsSchema";
 
 export async function CreateNewOrganisation(
     name: string,
-    owner: Schema.Types.ObjectId
+    owner: mongoose.Types.ObjectId
 ) {
-    const org = await Organisations.create({
+    const org = new Organisations({
         name: name,
         owner: owner,
     });
-    return org;
+    await org.validate();
+    const saved = await org.save();
+    return saved;
 }
 
 export async function FindOneOrganisationById(
-    organisationId: Schema.Types.ObjectId
+    organisationId: mongoose.Types.ObjectId
 ) {
     const org = await Organisations.findOne({
         _id: organisationId,
@@ -22,8 +24,8 @@ export async function FindOneOrganisationById(
 }
 
 export async function FindOrganisationByIdAndUpdateOwner(
-    organisationId: Schema.Types.ObjectId,
-    newOwnerId: Schema.Types.ObjectId
+    organisationId: mongoose.Types.ObjectId,
+    newOwnerId: mongoose.Types.ObjectId
 ) {
     const org = await Organisations.findByIdAndUpdate(
         {
@@ -45,5 +47,5 @@ export async function DeleteOrganisationById(organisationId: string) {
     const deleteResult = await Organisations.deleteOne({
         _id: organisationId,
     });
-    return deleteResult
+    return deleteResult;
 }

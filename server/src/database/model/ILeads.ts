@@ -15,5 +15,5 @@ export interface ILeads extends Document {
     };
     location: string;
     comments: string;
-    organisation: mongoose.Schema.Types.ObjectId;
+    organisation: mongoose.Types.ObjectId;
 }

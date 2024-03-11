@@ -15,6 +15,6 @@ export interface IContacts extends Document {
     };
     email: string;
     status: CONTACT_STATUS;
-    account: mongoose.Schema.Types.ObjectId;
-    organisation: mongoose.Schema.Types.ObjectId;
+    account: mongoose.Types.ObjectId;
+    organisation: mongoose.Types.ObjectId;
 }

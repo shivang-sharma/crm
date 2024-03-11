@@ -37,7 +37,15 @@ export class ContactsService {
                 accountNotFound: false,
                 notAuthorized: false,
                 contact: null,
+                notAssociatedWithAnyOrg: false,
             };
+            if (!currentUser.organisation) {
+                response.notAssociatedWithAnyOrg = true;
+                logger.warn(
+                    `Curent user not associated with any org, action denied`
+                );
+                return response;
+            }
             // If user has READ_ONLY role reject the request
             if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
@@ -57,7 +65,7 @@ export class ContactsService {
                     );
                     return response;
                 }
-                if (accountObj.organisation !== currentUser.organisation) {
+                if (!accountObj.organisation.equals(currentUser.organisation)) {
                     // reject account does not belong to the same org
                     response.accountBelongToDifferentOrg = true;
                     logger.warn(
@@ -184,7 +192,7 @@ export class ContactsService {
                 return response;
             }
             // if the contact belong to different org reject the request
-            if (contact.organisation !== currentUser.organisation) {
+            if (!contact.organisation.equals(currentUser.organisation)) {
                 response.contactBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -223,15 +231,19 @@ export class ContactsService {
         type: string | undefined
     ) {
         try {
-            const response: CreateContactServiceResult & { notFound: boolean } =
-                {
-                    accountBelongToDifferentOrg: false,
-                    accountNotFound: false,
-                    contact: null,
-                    notAuthorized: false,
-                    notFound: false,
-                    phoneNumberNotValid: false,
-                };
+            const response: CreateContactServiceResult & {
+                notFound: boolean;
+                contactBelongToDiffOrg: boolean;
+            } = {
+                notAssociatedWithAnyOrg: false,
+                accountBelongToDifferentOrg: false,
+                accountNotFound: false,
+                contact: null,
+                notAuthorized: false,
+                notFound: false,
+                phoneNumberNotValid: false,
+                contactBelongToDiffOrg: false,
+            };
             // If user has READ_ONLY role reject the request
             if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
@@ -248,8 +260,22 @@ export class ContactsService {
                 );
                 return response;
             }
-            // check is the provided account is valid
+            if (!currentUser.organisation) {
+                response.notAssociatedWithAnyOrg = true;
+                logger.warn(
+                    `Curent user not associated with any org, action denied currenUserOrg:${currentUser.organisation} for correlationId:${correlationId}`
+                );
+                return response;
+            }
+            if (!currentUser.organisation.equals(contact.organisation)) {
+                response.contactBelongToDiffOrg = true;
+                logger.warn(
+                    `Contact belong to different organisation currentUserOrg:${currentUser.organisation} contactOrg:${contact.organisation} for correlationId:${correlationId}`
+                );
+                return response;
+            }
             if (account) {
+                // check is the provided account is valid
                 const accountObj = await FindAccountById(account);
                 if (!accountObj) {
                     // reject account does not exist
@@ -259,7 +285,7 @@ export class ContactsService {
                     );
                     return response;
                 }
-                if (accountObj.organisation !== currentUser.organisation) {
+                if (!accountObj.organisation.equals(currentUser.organisation)) {
                     // reject account does not belong to the same org
                     response.accountBelongToDifferentOrg = true;
                     logger.warn(
@@ -359,7 +385,7 @@ export class ContactsService {
                 return response;
             }
             // if the contact belong to different org reject the request
-            if (contact.organisation !== currentUser.organisation) {
+            if (!contact.organisation.equals(currentUser.organisation)) {
                 response.contactBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -427,6 +453,7 @@ export type CreateContactServiceResult = {
     phoneNumberNotValid: boolean;
     accountNotFound: boolean;
     notAuthorized: boolean;
+    notAssociatedWithAnyOrg: boolean;
     contact: IContacts | null;
 };
 export type GetAllContactsForCurrentOrganisationServiceResult = {

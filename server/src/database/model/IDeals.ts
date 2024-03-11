@@ -6,14 +6,14 @@ import { Value } from "../types/value";
 export interface IDeals extends Document {
     name: string;
     stage: STAGE;
-    owner: mongoose.Schema.Types.ObjectId;
+    owner: mongoose.Types.ObjectId;
     value: Value;
-    contacts: mongoose.Schema.Types.ObjectId[];
-    account: mongoose.Schema.Types.ObjectId;
+    contacts: mongoose.Types.ObjectId[];
+    account: mongoose.Types.ObjectId;
     priority: PRIORITY;
     expectedCloseDate: Date;
     closeProbability: number;
     actualValue: Value;
     closedAt: Date;
-    organisation: mongoose.Schema.Types.ObjectId;
+    organisation: mongoose.Types.ObjectId;
 }

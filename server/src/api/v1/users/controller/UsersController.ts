@@ -22,12 +22,12 @@ export class UsersController {
             `GetAllUsers request recieved for correlationId: ${correlationId}`
         );
         logger.info(
-            `Validating the GetAllUsers request payload, payload ${req.params} for correlationId:${correlationId}`
+            `Validating the GetAllUsers request payload, payload ${JSON.stringify(req.params)} for correlationId:${correlationId}`
         );
         const validationResult = ZGetAllUserInputSchema.safeParse(req.params);
         if (!validationResult.success) {
             logger.warn(
-                `Validation failed for GetAllUsers request payload errors:${validationResult.error.errors} for correlationId:${correlationId}`
+                `Validation failed for GetAllUsers request payload errors:${JSON.stringify(validationResult.error.errors)} for correlationId:${correlationId}`
             );
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,

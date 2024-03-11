@@ -70,6 +70,13 @@ export class ContactsController {
             logger.info(
                 `Call to createContactService service ended for correlationId: ${correlationId}`
             );
+            if (result.notAssociatedWithAnyOrg) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "User not associated with any org, action denied",
+                    true
+                );
+            }
             if (result.notAuthorized) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
@@ -295,6 +302,20 @@ export class ContactsController {
             logger.info(
                 `Call to updateContactService service ended for correlationId: ${correlationId}`
             );
+            if (result.notAssociatedWithAnyOrg) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "User is not associated with any organisation, action denied",
+                    true
+                );
+            }
+            if (result.contactBelongToDiffOrg) {
+                throw new ApiError(
+                    StatusCodes.FORBIDDEN,
+                    "Contact belong to different organisation, action denied",
+                    true
+                );
+            }
             if (result.notFound) {
                 throw new ApiError(
                     StatusCodes.NOT_FOUND,

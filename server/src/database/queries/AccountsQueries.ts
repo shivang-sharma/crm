@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IAccounts } from "../model/IAccounts";
 import { Accounts } from "../schema/AccountsSchema";
 
@@ -15,10 +15,9 @@ export async function FindManyAccountsByOrganisationId(
     return accounts;
 }
 export async function FindManyAccountsBy(
-    organisationId: Schema.Types.ObjectId,
+    organisationId: mongoose.Types.ObjectId,
     limit: number,
     page: number,
-    industry: string | undefined,
     name: string | undefined,
     priority: string | undefined,
     size: string | undefined,
@@ -31,11 +30,6 @@ export async function FindManyAccountsBy(
             },
             {
                 $or: [
-                    {
-                        $text: {
-                            $search: industry ? industry : "",
-                        },
-                    },
                     {
                         $text: {
                             $search: name ? name : "",

@@ -1,4 +1,5 @@
 import { ZCURRENCY, ZPRIORITY, ZSTAGE } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZUpdateDealInputSchema = z.object({
@@ -8,8 +9,13 @@ export const ZUpdateDealInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "DealId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((dealId) => {
+            try {
+                new mongoose.Types.ObjectId(dealId);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }),
     name: z
         .string({
@@ -36,8 +42,13 @@ export const ZUpdateDealInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "Owner is required",
         })
-        .uuid({
-            message: "Owner to be a valid UUId",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     value: z
@@ -61,12 +72,17 @@ export const ZUpdateDealInputSchema = z.object({
             z
                 .string({
                     description: "Contacts associated with the deal",
-                    invalid_type_error: "Need to be a valid array of uuid",
+                    invalid_type_error: "Need to be a valid array of objectId",
                     required_error:
                         "At least 1 contact associated with the deal is required",
                 })
-                .uuid({
-                    message: "Need to be a valid array of uuids",
+                .refine((contact) => {
+                    try {
+                        new mongoose.Types.ObjectId(contact);
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
                 })
         )
         .min(1, {

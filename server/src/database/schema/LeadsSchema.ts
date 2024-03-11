@@ -53,7 +53,6 @@ const leadsSchema = new Schema<ILeads>(
             type: String,
             min: 50,
             max: 500,
-            text: true,
         },
         organisation: {
             type: Schema.Types.ObjectId,

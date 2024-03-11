@@ -32,7 +32,8 @@ export class AccountsController {
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,
                 "Invalid input data",
-                true
+                true,
+                validationResult.error.errors
             );
         }
         if (currentUser) {
@@ -101,7 +102,7 @@ export class AccountsController {
             );
         }
         if (currentUser) {
-            const { limit, page, industry, name, priority, size, type } =
+            const { limit, page, name, priority, size, type } =
                 validationResult.data;
             logger.info(
                 `Validation successfull for GetAllAccount request payload for correlationId:${correlationId} `
@@ -116,7 +117,6 @@ export class AccountsController {
                     currentUser,
                     limit,
                     page,
-                    industry,
                     name,
                     priority,
                     size,

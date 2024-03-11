@@ -1,4 +1,5 @@
 import { ZROLE } from "@/database/enums";
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZChangeRoleInputSchema = z.object({
@@ -8,8 +9,13 @@ export const ZChangeRoleInputSchema = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "UserId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((userId) => {
+            try {
+                new mongoose.Types.ObjectId(userId);
+                return true
+            } catch (error) {
+                return false;
+            }
         }),
     role: z
         .string({

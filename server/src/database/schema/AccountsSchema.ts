@@ -21,7 +21,6 @@ const accountsSchema = new Schema<IAccounts>(
         industry: {
             type: String,
             required: true,
-            text: true,
         },
         priority: {
             type: String,

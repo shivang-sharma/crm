@@ -65,7 +65,7 @@ export class LeadsService {
                     );
                     return response;
                 }
-                if (ownerObj.organisation !== currentUser.organisation) {
+                if (!ownerObj.organisation.equals(currentUser.organisation)) {
                     // reject owner does not belong to the same org
                     response.assignedOwnerBelongToDifferentOrg = true;
                     logger.warn(
@@ -151,7 +151,7 @@ export class LeadsService {
                 );
                 return response;
             }
-            if (lead.organisation === currentUser.organisation) {
+            if (lead.organisation.equals(currentUser.organisation)) {
                 response.leadBelongToDifferentOrg = true;
                 logger.warn(
                     `Lead belong to a different organisation, leadOrgId:${lead.organisation} userOrg:${currentUser.organisation} for correlationId:${correlationId}`
@@ -159,7 +159,7 @@ export class LeadsService {
                 return response;
             }
             // If the user is not the owner of the lead then reject the request
-            if (currentUser.id !== lead.owner) {
+            if (!lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User is not the owner of the Lead, leadId:${leadId}, ownerId:${lead.owner}, userId:${currentUser.id} for correlationId:${correlationId}`
@@ -232,7 +232,6 @@ export class LeadsService {
         currentUser: IUsers,
         limit: number,
         page: number,
-        comments: string | undefined,
         name: string | undefined,
         owner: string | undefined,
         status: string | undefined
@@ -245,7 +244,6 @@ export class LeadsService {
                 currentUser.organisation,
                 limit,
                 page,
-                comments,
                 name,
                 owner,
                 status
@@ -288,7 +286,7 @@ export class LeadsService {
                 return response;
             }
             // if the lead belong to different org reject the request
-            if (lead.organisation !== currentUser.organisation) {
+            if (!lead.organisation.equals(currentUser.organisation)) {
                 response.leadBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -334,7 +332,7 @@ export class LeadsService {
                 return response;
             }
             // if user is not the owner of the lead then reject
-            if (lead.owner !== currentUser.id) {
+            if (!lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User is not the owner of the lead, action denied, leadOwner: ${lead.owner} userId:${currentUser.id} correlationId;${correlationId}`
@@ -396,7 +394,7 @@ export class LeadsService {
                 return response;
             }
             // If user is not the owner of the lead then reject the request
-            if (lead.owner === currentUser.id) {
+            if (!lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `Lead updation failed because user is not the owner of the lead, UserId: ${currentUser.id}, leadOwner:${lead.owner} correlationId:${correlationId}`
@@ -421,7 +419,7 @@ export class LeadsService {
                     );
                     return response;
                 }
-                if (ownerObj.organisation === currentUser.organisation) {
+                if (!ownerObj.organisation.equals(currentUser.organisation)) {
                     // reject owner does not belong to the same org
                     response.assignedOwnerBelongToDifferentOrg = true;
                     logger.warn(
@@ -520,7 +518,7 @@ export class LeadsService {
                 return response;
             }
             // if the lead belong to different org reject the request
-            if (lead.organisation !== currentUser.organisation) {
+            if (!lead.organisation.equals(currentUser.organisation)) {
                 response.leadBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`

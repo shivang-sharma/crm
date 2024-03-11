@@ -10,5 +10,5 @@ export interface IAccounts extends Document {
     description: string;
     size: SIZE;
     type: ACCOUNT_TYPE;
-    organisation: mongoose.Schema.Types.ObjectId;
+    organisation: mongoose.Types.ObjectId;
 }

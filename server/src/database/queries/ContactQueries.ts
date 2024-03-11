@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IContacts } from "../model/IContacts";
 import { Contacts } from "../schema/ContactsSchema";
 
@@ -16,7 +16,7 @@ export async function FindManyContactsByOrganisationId(
     return contacts;
 }
 export async function FindManyContactsBy(
-    organisationId: Schema.Types.ObjectId,
+    organisationId: mongoose.Types.ObjectId,
     limit: number,
     page: number,
     account: string | undefined,

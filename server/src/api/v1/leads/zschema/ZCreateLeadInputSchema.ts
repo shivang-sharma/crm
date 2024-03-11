@@ -2,6 +2,7 @@ import z from "zod";
 import countries from "i18n-iso-countries";
 import { phone } from "phone";
 import { ZLEAD_STATUS } from "@/database/enums";
+import mongoose from "mongoose";
 
 export const ZCreateLeadInputSchema = z.object({
     name: z.string({
@@ -34,8 +35,13 @@ export const ZCreateLeadInputSchema = z.object({
             description: "Owner(Sales Representative) for the lead",
             invalid_type_error: "Owner need to be a valid UUID",
         })
-        .uuid({
-            message: "Owner need to be a valid UUID",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     phone: z

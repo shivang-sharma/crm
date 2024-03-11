@@ -17,12 +17,6 @@ export const ZGetAllAccountInputSchema = z.object({
         })
         .refine((priority) => ZPRIORITY.safeParse(priority).success)
         .optional(),
-    industry: z
-        .string({
-            description: "Industry the account belongs to",
-            invalid_type_error: "Industry need to be a valid string",
-        })
-        .optional(),
     size: z
         .string({
             description: "Size of the account MICRO | SMALL | MID | LARGE",

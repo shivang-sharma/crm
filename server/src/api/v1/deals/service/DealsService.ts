@@ -31,6 +31,7 @@ export class DealsService {
     ) {
         try {
             const response: CreateDealServiceResult = {
+                notAssociatedWithAnyOrg: false,
                 deal: null,
                 notAuthorized: false,
                 assignedOwnerNotFound: false,
@@ -47,6 +48,13 @@ export class DealsService {
                 );
                 return response;
             }
+            if (!currentUser.organisation) {
+                response.notAssociatedWithAnyOrg = true;
+                logger.warn(
+                    `Current user is not associated with any organisation currentUserOrg:${currentUser.organisation} currentUserId:${currentUser.id} for correlationId:${correlationId}`
+                );
+                return response;
+            }
             // check if the assigned owner exists or not
             const ownerObj = await FindOneUserById(owner);
             if (!ownerObj) {
@@ -57,7 +65,7 @@ export class DealsService {
                 return response;
             }
             // check if the assigned owner belongs to same org or not
-            if (ownerObj.organisation !== currentUser.organisation) {
+            if (!ownerObj.organisation.equals(currentUser.organisation)) {
                 response.assignedOwnerBelongToDifferentOrg = true;
                 logger.warn(
                     `Assigned owner belongs to a different organisation ownerOrg:${ownerObj.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -74,7 +82,7 @@ export class DealsService {
                 return response;
             }
             // check if the assigned owner belongs to same org or not
-            if (accountObj.organisation !== currentUser.organisation) {
+            if (!accountObj.organisation.equals(currentUser.organisation)) {
                 response.assignedAccountBelongToDifferentOrg = true;
                 logger.warn(
                     `Assigned account belongs to a different organisation accountOrg:${accountObj.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -207,7 +215,7 @@ export class DealsService {
                 return response;
             }
             // if the deal belong to different org reject the request
-            if (deal.organisation !== deal.organisation) {
+            if (!deal.organisation.equals(deal.organisation)) {
                 response.dealBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Deal belongs to a different organisation access denied for dealId:${dealId} dealOrg:${deal.organisation} userOrg:${deal.organisation} correlationId:${correlationId}`
@@ -273,7 +281,7 @@ export class DealsService {
                 );
                 return response;
             }
-            if (deal.organisation !== currentUser.organisation) {
+            if (!deal.organisation.equals(currentUser.organisation)) {
                 response.dealBelongToDifferentOrg = true;
                 logger.warn(
                     `Deal belongs to different organisation dealId:${dealId} dealOrg:${deal.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -291,7 +299,7 @@ export class DealsService {
                     return response;
                 }
                 // check if the assigned owner belongs to same org or not
-                if (ownerObj.organisation !== currentUser.organisation) {
+                if (!ownerObj.organisation.equals(currentUser.organisation)) {
                     response.assignedOwnerBelongToDifferentOrg = true;
                     logger.warn(
                         `Assigned owner belongs to a different organisation ownerOrg:${ownerObj.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -313,7 +321,11 @@ export class DealsService {
                         );
                         return response;
                     }
-                    if (contactObj.organisation !== currentUser.organisation) {
+                    if (
+                        !contactObj.organisation.equals(
+                            currentUser.organisation
+                        )
+                    ) {
                         response.someContactsBelongToDifferentOrg = true;
                         logger.warn(
                             `Assigned contact belongs to different org correlationId:${correlationId}`
@@ -389,7 +401,7 @@ export class DealsService {
                 return response;
             }
             // if the deal belong to different org reject the request
-            if (deal.organisation !== currentUser.organisation) {
+            if (!deal.organisation.equals(currentUser.organisation)) {
                 response.dealBelongsToDifferentOrganisation = true;
                 logger.warn(
                     `Deal belongs to a different organisation access denied for dealId:${dealId} contactOrg:${deal.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
@@ -428,6 +440,7 @@ export class DealsService {
 }
 
 type CreateDealServiceResult = {
+    notAssociatedWithAnyOrg: boolean;
     notAuthorized: boolean;
     assignedOwnerNotFound: boolean;
     assignedOwnerBelongToDifferentOrg: boolean;

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZLeadId = z.object({
@@ -7,7 +8,12 @@ export const ZLeadId = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "LeadId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((leadId) => {
+            try {
+                new mongoose.Types.ObjectId(leadId);
+                return true
+            } catch (error) {
+                return false;
+            }
         }),
 });

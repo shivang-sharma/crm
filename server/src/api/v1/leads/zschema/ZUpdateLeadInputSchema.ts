@@ -2,16 +2,22 @@ import z from "zod";
 import countries from "i18n-iso-countries";
 import { phone } from "phone";
 import { ZLEAD_STATUS } from "@/database/enums";
+import mongoose from "mongoose";
 
 export const ZUpdateLeadInputSchema = z.object({
     leadId: z
         .string({
             description: "LeadId in params",
-            invalid_type_error: "Need to be a valid uuid",
+            invalid_type_error: "Need to be a valid objectId",
             required_error: "leadId is required in params",
         })
-        .uuid({
-            message: "Need to be a valid UUID",
+        .refine((leadId) => {
+            try {
+                new mongoose.Types.ObjectId(leadId);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }),
     name: z
         .string({
@@ -43,10 +49,15 @@ export const ZUpdateLeadInputSchema = z.object({
     owner: z
         .string({
             description: "Owner(Sales Representative) for the lead",
-            invalid_type_error: "Owner need to be a valid UUID",
+            invalid_type_error: "Owner need to be a valid ObjectId",
         })
-        .uuid({
-            message: "Owner need to be a valid UUID",
+        .refine((owner) => {
+            try {
+                new mongoose.Types.ObjectId(owner);
+                return true;
+            } catch (error) {
+                return false;
+            }
         })
         .optional(),
     phone: z

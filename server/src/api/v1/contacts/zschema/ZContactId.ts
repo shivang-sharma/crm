@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import z from "zod";
 
 export const ZContactId = z.object({
@@ -7,7 +8,12 @@ export const ZContactId = z.object({
             invalid_type_error: "Need to be a valid string",
             required_error: "ContactId is required",
         })
-        .uuid({
-            message: "Need to be a valid UUId",
+        .refine((contactId) => {
+            try {
+                new mongoose.Types.ObjectId(contactId);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }),
 });
