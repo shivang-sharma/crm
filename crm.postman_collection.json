@@ -1,0 +1,761 @@
+{
+	"info": {
+		"_postman_id": "865cc49f-b3a3-4799-89b6-5c8cba3f9cfc",
+		"name": "crm",
+		"description": "Rest APi Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "8669354"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"shivangs\",\n    \"name\": {\n        \"fname\": \"Shivang\",\n        \"lname\": \"Sharma\"\n    },\n    \"email\": \"shivang@gmail.com\",\n    \"password\": \"Password@2021\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/auth/signup"
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"shivang@gmail.com\",\n    \"password\":\"Password@2021\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlZmJlNjMwNGY2MWVkYmVlZTAwNWYiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNjA4NzQsImV4cCI6MTcxMDMzMzY3NH0.gbGysvd4VCUS3iQT5AzCu9G77dzsEbc4ulogcWyACHI"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "{{BASE_URL}}/auth/logout"
+					},
+					"response": []
+				}
+			],
+			"description": "- POST /api/v1/auth/signup\n- POST /api/v1/auth/login\n- POST /api/v1/auth/logout"
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "GetAllUsers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/users?page=1&limit=20",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/users/65eefd530504a78394bca05c"
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveFromOrg",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": "{{BASE_URL}}/users/65eeccefaefb3e41bd27836e/remove_from_org"
+					},
+					"response": []
+				},
+				{
+					"name": "ChangeRole",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/users/65eeccefaefb3e41bd27836e/change_role"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateUser",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": {\n        \"fname\":\"shivang\",\n        \"lname\":\"sharma\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/users/65eeccefaefb3e41bd27836e"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteUsers",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/users/65eefd2f0504a78394bca051"
+					},
+					"response": []
+				}
+			],
+			"description": "- GET /api/v1/users?email=&username=&page=&limit=\n    \n- GET /api/v1/users/:userId\n    \n- PATCH /api/v1/users/:userId/change_role\n    \n- PATCH /api/v1/users/:userId/remove_from_org (can be done by ADMIN)\n    \n- PATCH /api/v1/users/:userId (only self)\n    \n- DELETE /api/v1/users/:userId"
+		},
+		{
+			"name": "organisation",
+			"item": [
+				{
+					"name": "CreateOrganisation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"hubspot\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/organisations"
+					},
+					"response": []
+				},
+				{
+					"name": "GetOrganisations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/organisations/65eef6cc2b0e3e1b4dc2c788"
+					},
+					"response": []
+				},
+				{
+					"name": "ChangeOwner",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"newOwner\": \"65eeccefaefb3e41bd27836e\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/organisations/65eef6cc2b0e3e1b4dc2c788/change_owner"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteOrganisation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/organisations/65eefdb80504a78394bca067"
+					},
+					"response": []
+				}
+			],
+			"description": "- POST /api/v1/organisations\n- GET /api/v1/organisations/:organisationId\n- PATCH /api/v1/organisations/:organisationId/change_owner\n- DELETE /api/v1/organisations/:organisationId"
+		},
+		{
+			"name": "contacts",
+			"item": [
+				{
+					"name": "CreateContact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sarthak\",\n    \"email\": \"stk@gmail.com\",\n    \"phone\": {\n        \"number\": \"9312324323\"\n    },\n    \"type\": \"QUALIFIED_LEAD\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/contacts"
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllContact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/contacts?priority=LOW&status=ACTIVE&page=&limit=",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"contacts"
+							],
+							"query": [
+								{
+									"key": "priority",
+									"value": "LOW"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE"
+								},
+								{
+									"key": "page",
+									"value": ""
+								},
+								{
+									"key": "limit",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetContact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/contacts/65eeffa234d5de8f136ebf3f"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateContact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/contacts/65eeffa234d5de8f136ebf3f"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteContact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/contacts/65eeffa234d5de8f136ebf3f"
+					},
+					"response": []
+				}
+			],
+			"description": "- POST /api/v1/contacts\n    \n- GET /api/v1/contacts?type=&name=&priority=&status=&account=&page=&limit=\n    \n- GET /api/v1/contacts/:contactId\n    \n- PATCH /api/v1/contacts/:contactId\n    \n- DELETE /api/v1/contacts/:contactId"
+		},
+		{
+			"name": "deals",
+			"item": [
+				{
+					"name": "CreateDeal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "{{BASE_URL}}/deals"
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllDeals",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/deals?name=&stage=&owner=&value_gt=&value_lt=&account=&priority=&close_probability_gt=&close_probability_lt=&page=&limit=",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"deals"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								},
+								{
+									"key": "stage",
+									"value": ""
+								},
+								{
+									"key": "owner",
+									"value": ""
+								},
+								{
+									"key": "value_gt",
+									"value": ""
+								},
+								{
+									"key": "value_lt",
+									"value": ""
+								},
+								{
+									"key": "account",
+									"value": ""
+								},
+								{
+									"key": "priority",
+									"value": ""
+								},
+								{
+									"key": "close_probability_gt",
+									"value": ""
+								},
+								{
+									"key": "close_probability_lt",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": ""
+								},
+								{
+									"key": "limit",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetDeal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/deals/3984239r8"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateDeal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": "{{BASE_URL}}/deals/329823"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteDeal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/deals/32432"
+					},
+					"response": []
+				}
+			],
+			"description": "- POST /api/v1/deals\n    \n- GET /api/v1/deals?name=&stage=&owner=&value_gt=&value_lt=&account=&priority=&close_probability_gt=&close_probability_lt=&page=&limit=\n    \n- GET /api/v1/deals/:dealId\n    \n- PATCH /api/v1/deals/:dealId\n    \n- DELETE /api/v1/deals/:dealId"
+		},
+		{
+			"name": "leads",
+			"item": [
+				{
+					"name": "CreateLead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/leads"
+					},
+					"response": []
+				},
+				{
+					"name": "MoveToContacts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "{{BASE_URL}}/leads/4032843/move_to_contacts"
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllLeads",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/leads?name=&status=&owner=&page=&limit=",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"leads"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								},
+								{
+									"key": "status",
+									"value": ""
+								},
+								{
+									"key": "owner",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": ""
+								},
+								{
+									"key": "limit",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetLead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/leads/32424"
+					},
+					"response": []
+				},
+				{
+					"name": "ChangeStatus",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": "{{BASE_URL}}/leads/439u39"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateLead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": "{{BASE_URL}}/leads/439u39"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteLead",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/leads/43235"
+					},
+					"response": []
+				}
+			],
+			"description": "- POST /api/v1/leads\n- POST /api/v1/leads/:leadId/move_to_contacts\n- GET /api/v1/leads?name=&status=&owner=&page=&limit=\n    \n- GET /api/v1/leads/:leadId\n- PATCH /api/v1/leads/:leadId/change_status\n- PATCH /api/v1/leads/:leadId\n- DELETE /api/v1/leads/:leadId"
+		},
+		{
+			"name": "accounts",
+			"item": [
+				{
+					"name": "CreateAccount",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "{{BASE_URL}}/accounts"
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllAccounts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/accounts?name=&priority=&size=&type=&page=&limit=",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"accounts"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								},
+								{
+									"key": "priority",
+									"value": ""
+								},
+								{
+									"key": "size",
+									"value": ""
+								},
+								{
+									"key": "type",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": ""
+								},
+								{
+									"key": "limit",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAccount",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/accounts/49y43984"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateAccount",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": "{{BASE_URL}}/accounts/32428y4928"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteAccount",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWVlY2NlZmFlZmIzZTQxYmQyNzgzNmUiLCJlbWFpbCI6InNoaXZhbmdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJzaGl2YW5ncyIsImZ1bGxuYW1lIjoic2hpdmFuZyBzaGFybWEiLCJpYXQiOjE3MTAxNDkxNTMsImV4cCI6MTcxMDMyMTk1M30.uIV4jOr-FckABqo05_7rFW_M2OqUpRAsiyPG1zbQ3gM"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "{{BASE_URL}}/accounts/32984u329"
+					},
+					"response": []
+				}
+			],
+			"description": "### ACCOUNTS\n\n- POST /api/v1/accounts\n- GET /api/v1/accounts?name=&priority=&size=&type=&page=&limit=\n    \n- GET /api/v1/accounts/:accountId\n- PATCH /api/v1/accounts/:accountId\n- DELETE /api/v1/accounts/:accountId"
+		}
+	]
+}
