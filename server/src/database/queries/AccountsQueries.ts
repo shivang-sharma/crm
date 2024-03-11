@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { FilterQuery, Schema } from "mongoose";
 import { IAccounts } from "../model/IAccounts";
 import { Accounts } from "../schema/AccountsSchema";
 
@@ -23,31 +23,14 @@ export async function FindManyAccountsBy(
     size: string | undefined,
     type: string | undefined
 ) {
-    const accounts = await Accounts.find({
-        $and: [
-            {
-                organisation: organisationId,
-            },
-            {
-                $or: [
-                    {
-                        $text: {
-                            $search: name ? name : "",
-                        },
-                    },
-                    {
-                        priority: priority,
-                    },
-                    {
-                        size: size,
-                    },
-                    {
-                        type: type,
-                    },
-                ],
-            },
-        ],
-    })
+    const filter: FilterQuery<IAccounts> = { organisation: organisationId };
+
+    if (name !== undefined) filter.$text = { $search: name };
+    if (priority !== undefined) filter.priority = priority;
+    if (size !== undefined) filter.size = size;
+    if (type !== undefined) filter.type = type;
+
+    const accounts = await Accounts.find(filter)
         .limit(limit)
         .skip((page - 1) * limit);
     return accounts;

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { FilterQuery, Schema } from "mongoose";
 import { Users } from "../schema/UsersSchema";
 import { ROLE } from "../enums/ERole";
 import { IUsers } from "../model/IUsers";
@@ -128,41 +128,31 @@ export async function FindManyUsersBy(
     email: string | undefined,
     username: string | undefined
 ) {
+    const filter: FilterQuery<IUsers> = { organisation: organisationId };
+
     if (!email && !username) {
-        const users = await Users.find({
-            organisation: organisationId,
-        })
+        const users = await Users.find(filter)
             .select("-password -refreshToken")
             .limit(limit)
             .skip((page - 1) * limit);
         return users;
     }
-    const users = await Users.find(
-        {
-            $and: [
-                {
-                    organisation: organisationId,
-                },
-                {
-                    $or: [
-                        {
-                            email: email,
-                        },
-                        {
-                            $text: {
-                                $search: username ? username : "",
-                            },
-                        },
-                    ],
-                },
-            ],
+
+    const orConditions: FilterQuery<IUsers>[] = [];
+
+    if (email !== undefined) orConditions.push({ email: email });
+    if (username !== undefined)
+        orConditions.push({ $text: { $search: username } });
+
+    if (orConditions.length > 0) {
+        filter.$and = [{ $or: orConditions }];
+    }
+
+    const users = await Users.find(filter, {
+        score: {
+            $meta: "textScore",
         },
-        {
-            score: {
-                $meta: "textScore",
-            },
-        }
-    )
+    })
         .select("-password -refreshToken")
         .sort({
             score: {
@@ -173,6 +163,7 @@ export async function FindManyUsersBy(
         .skip((page - 1) * limit);
     return users;
 }
+
 export async function FindUserByIdAndUpdate(
     id: string,
     updateData: Partial<IUsers>

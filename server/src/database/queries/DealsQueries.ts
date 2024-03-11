@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { FilterQuery, Schema } from "mongoose";
 import { IDeals } from "../model/IDeals";
 import { Deals } from "../schema/DealsSchema";
 
@@ -28,66 +28,30 @@ export async function FindManyDealsBy(
     limit: number,
     page: number
 ) {
-    const deals = await Deals.find(
-        {
-            $and: [
-                {
-                    organisation: organisationId,
-                },
-                {
-                    $or: [
-                        {
-                            account: account,
-                        },
-                        {
-                            $text: {
-                                $search: name ? name : "",
-                            },
-                        },
-                        {
-                            owner: owner,
-                        },
-                        {
-                            priority: priority,
-                        },
-                        {
-                            stage: stage,
-                        },
-                        {
-                            "value.amount": {
-                                $gt: value_gt,
-                            },
-                        },
-                        {
-                            "value.amount": {
-                                $lt: value_lt,
-                            },
-                        },
-                        {
-                            closeProbability: {
-                                $gt: close_probability_gt,
-                            },
-                        },
-                        {
-                            closeProbability: {
-                                $lt: close_probability_lt,
-                            },
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            score: {
-                $meta: "textScore",
-            },
-        }
-    )
-        .sort({
-            score: {
-                $meta: "textScore",
-            },
-        })
+    const filter: FilterQuery<IDeals> = { organisation: organisationId };
+
+    const orConditions: FilterQuery<IDeals>[] = [];
+
+    if (account !== undefined) orConditions.push({ account: account });
+    if (name !== undefined) orConditions.push({ $text: { $search: name } });
+    if (owner !== undefined) orConditions.push({ owner: owner });
+    if (priority !== undefined) orConditions.push({ priority: priority });
+    if (stage !== undefined) orConditions.push({ stage: stage });
+    if (value_gt !== undefined)
+        orConditions.push({ "value.amount": { $gt: value_gt } });
+    if (value_lt !== undefined)
+        orConditions.push({ "value.amount": { $lt: value_lt } });
+    if (close_probability_gt !== undefined)
+        orConditions.push({ closeProbability: { $gt: close_probability_gt } });
+    if (close_probability_lt !== undefined)
+        orConditions.push({ closeProbability: { $lt: close_probability_lt } });
+
+    if (orConditions.length > 0) {
+        filter.$or = orConditions;
+    }
+
+    const deals = await Deals.find(filter)
+        .sort({ score: { $meta: "textScore" } })
         .limit(limit)
         .skip((page - 1) * limit);
     return deals;
@@ -144,4 +108,10 @@ export async function FindManyDealsAndRemoveOwner(ownerId: string) {
         }
     );
     return updateResult;
+}
+export async function FindDealByName(name: string) {
+    const lead = await Deals.findOne({
+        name: name,
+    });
+    return lead;
 }

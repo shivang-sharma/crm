@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { FilterQuery, Schema } from "mongoose";
 import { ILeads } from "../model/ILeads";
 import { Leads } from "../schema/LeadsSchema";
 
@@ -36,28 +36,19 @@ export async function FindManyLeadsBy(
     owner: string | undefined,
     status: string | undefined
 ) {
-    const leads = await Leads.find({
-        $and: [
-            {
-                organisation: organisationId,
-            },
-            {
-                $or: [
-                    {
-                        $text: {
-                            $search: name ? name : "",
-                        },
-                    },
-                    {
-                        owner: owner,
-                    },
-                    {
-                        status: status,
-                    },
-                ],
-            },
-        ],
-    })
+    const filter: FilterQuery<ILeads> = { organisation: organisationId };
+
+    const orConditions: FilterQuery<ILeads>[] = [];
+
+    if (name !== undefined) orConditions.push({ $text: { $search: name } });
+    if (owner !== undefined) orConditions.push({ owner: owner });
+    if (status !== undefined) orConditions.push({ status: status });
+
+    if (orConditions.length > 0) {
+        filter.$or = orConditions;
+    }
+
+    const leads = await Leads.find(filter)
         .limit(limit)
         .skip((page - 1) * limit);
     return leads;
@@ -87,4 +78,18 @@ export async function DeleteLeadByOrganisationId(organisationId: string) {
         organisation: organisationId,
     });
     return deletedResult;
+}
+export async function FindLeadByNameOrEmailOrPhonNumber(
+    name: string,
+    email: string,
+    phoneNumber: string
+) {
+    const lead = await Leads.findOne({
+        $or: [
+            { name: name },
+            { email: email },
+            { "phone.number": phoneNumber },
+        ],
+    });
+    return lead;
 }

@@ -73,6 +73,13 @@ export class LeadsController {
             logger.info(
                 `Call to createLeadService service ended for correlationId: ${correlationId}`
             );
+            if (result.leadWithSameNameOrEmailOrPhoneNumberExist) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Lead with same name or email or phone exists",
+                    true
+                );
+            }
             if (result.notAuthorized) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
@@ -227,8 +234,7 @@ export class LeadsController {
             );
         }
         if (currentUser) {
-            const { limit, page, name, owner, status } =
-                validationResult.data;
+            const { limit, page, name, owner, status } = validationResult.data;
             logger.info(
                 `Validation for GetAllLeads request payload successfull for correlationId:${correlationId}`
             );
@@ -451,6 +457,13 @@ export class LeadsController {
             logger.info(
                 `Call to updateLeadService service ended for correlationId: ${correlationId}`
             );
+            if (result.leadWithSameNameOrEmailOrPhoneNumberExist) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Lead with same name or email or phone exists",
+                    true
+                );
+            }
             if (result.notFound) {
                 throw new ApiError(
                     StatusCodes.NOT_FOUND,

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { FilterQuery, Schema } from "mongoose";
 import { IContacts } from "../model/IContacts";
 import { Contacts } from "../schema/ContactsSchema";
 
@@ -39,32 +39,15 @@ export async function FindManyContactsBy(
     status: string | undefined,
     type: string | undefined
 ) {
-    const contacts = await Contacts.find({
-        $and: [
-            {
-                organisation: organisationId,
-            },
-            {
-                $or: [
-                    {
-                        account: account,
-                    },
-                    {
-                        name: name,
-                    },
-                    {
-                        priority: priority,
-                    },
-                    {
-                        status: status,
-                    },
-                    {
-                        type: type,
-                    },
-                ],
-            },
-        ],
-    })
+    const filter: FilterQuery<IContacts> = { organisation: organisationId };
+
+    if (account !== undefined) filter.account = account;
+    if (name !== undefined) filter.name = name;
+    if (priority !== undefined) filter.priority = priority;
+    if (status !== undefined) filter.status = status;
+    if (type !== undefined) filter.type = type;
+
+    const contacts = await Contacts.find(filter)
         .limit(limit)
         .skip((page - 1) * limit);
     return contacts;

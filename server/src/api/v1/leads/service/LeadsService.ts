@@ -7,6 +7,7 @@ import {
     DeleteOneLeadById,
     FindLeadById,
     FindLeadByIdAndUpdate,
+    FindLeadByNameOrEmailOrPhonNumber,
     FindManyLeadsBy,
 } from "@/database/queries/LeadQueries";
 import { ApiError } from "@/utils/error/ApiError";
@@ -31,6 +32,7 @@ export class LeadsService {
     ) {
         try {
             const response: CreateLeadServiceResult = {
+                leadWithSameNameOrEmailOrPhoneNumberExist: false,
                 notAuthorized: false,
                 phoneNumberNotValid: false,
                 assignedOwnerBelongToDifferentOrg: false,
@@ -103,6 +105,24 @@ export class LeadsService {
                     number: phoneData.phoneNumber,
                 };
                 newLeadData.organisation = currentUser.organisation;
+                const exists = await FindLeadByNameOrEmailOrPhonNumber(
+                    name,
+                    email,
+                    phoneData.phoneNumber
+                );
+                if (exists) {
+                    response.leadWithSameNameOrEmailOrPhoneNumberExist = true;
+                    logger.warn(
+                        `Lead with same name or email or phoneNumber exists, name:${name}, email:${email}, phone:${phoneData}, existingName:${
+                            exists.name
+                        } existingEmail:${
+                            exists.email
+                        } existingPhon:${JSON.stringify(
+                            exists.phone
+                        )} for correlationId:${correlationId}`
+                    );
+                    return response;
+                }
                 const newLead = await CreateNewLead(newLeadData);
                 logger.info(
                     `Lead created ${newLead.toJSON()} correlationId:${correlationId}`
@@ -377,6 +397,7 @@ export class LeadsService {
     ) {
         try {
             const response: CreateLeadServiceResult & { notFound: boolean } = {
+                leadWithSameNameOrEmailOrPhoneNumberExist: false,
                 phoneNumberNotValid: false,
                 notAuthorized: false,
                 notFound: false,
@@ -462,6 +483,26 @@ export class LeadsService {
                     countryIso3: phoneData.countryIso3,
                     number: phoneData.phoneNumber,
                 };
+            }
+            if (name || email || phoneData) {
+                const exists = await FindLeadByNameOrEmailOrPhonNumber(
+                    name as string,
+                    email as string,
+                    phoneData?.phoneNumber as string
+                );
+                if (exists) {
+                    response.leadWithSameNameOrEmailOrPhoneNumberExist = true;
+                    logger.warn(
+                        `Lead with same name or email or phoneNumber exists, name:${name}, email:${email}, phone:${phoneData}, existingName:${
+                            exists.name
+                        } existingEmail:${
+                            exists.email
+                        } existingPhon:${JSON.stringify(
+                            exists.phone
+                        )} for correlationId:${correlationId}`
+                    );
+                    return response;
+                }
             }
             const updatedLead = await FindLeadByIdAndUpdate(
                 leadId,
@@ -562,6 +603,7 @@ export type CreateLeadServiceResult = {
     assignedOwnerDoesNotHaveSufficientAccess: boolean;
     assignedOwnerNotFound: boolean;
     assignedOwnerBelongToDifferentOrg: boolean;
+    leadWithSameNameOrEmailOrPhoneNumberExist: boolean;
     lead: ILeads | null;
 };
 export type MoveToContactServiceResult = {

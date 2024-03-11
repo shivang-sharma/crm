@@ -11,7 +11,6 @@ import {
     DeleteOneContactById,
     FindContactById,
     FindContactByIdAndUpdate,
-    FindContactByName,
     FindContactByNameOrEmailOrPhonNumber,
     FindManyContactsBy,
 } from "@/database/queries/ContactQueries";
@@ -258,6 +257,7 @@ export class ContactsService {
                 contactBelongToDiffOrg: boolean;
             } = {
                 notAssociatedWithAnyOrg: false,
+                contactWithSameNameOrEmailOrPhoneNumberExist: false,
                 accountBelongToDifferentOrg: false,
                 accountNotFound: false,
                 contact: null,
@@ -349,6 +349,27 @@ export class ContactsService {
                     countryIso3: phoneData.countryIso3,
                     number: phoneData.phoneNumber,
                 };
+            }
+            if (name || email || phoneData) {
+                const exists = await FindContactByNameOrEmailOrPhonNumber(
+                    name as string,
+                    email as string,
+                    phoneData?.phoneNumber as string
+                );
+                if (exists) {
+                    response.contactWithSameNameOrEmailOrPhoneNumberExist =
+                        true;
+                    logger.warn(
+                        `Contact already exist with name or email or phone name:${name} email:${email} phone:${phoneData} existName:${
+                            exists.name
+                        } existEmail:${
+                            exists.email
+                        } existPhone:${JSON.stringify(
+                            exists.phone
+                        )} for correlationId:${correlationId}`
+                    );
+                    return response;
+                }
             }
             const updatedContact = await FindContactByIdAndUpdate(
                 contactId,

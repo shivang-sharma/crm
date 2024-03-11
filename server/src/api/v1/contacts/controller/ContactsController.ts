@@ -307,6 +307,13 @@ export class ContactsController {
             logger.info(
                 `Call to updateContactService service ended for correlationId: ${correlationId}`
             );
+            if (result.contactWithSameNameOrEmailOrPhoneNumberExist) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Contact with same name or email or phone exists",
+                    true
+                );
+            }
             if (result.notAssociatedWithAnyOrg) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,

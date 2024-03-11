@@ -7,6 +7,7 @@ import {
     DeleteOneDealById,
     FindDealById,
     FindDealByIdAndUpdate,
+    FindDealByName,
     FindManyDealsBy,
 } from "@/database/queries/DealsQueries";
 import { ApiError } from "@/utils/error/ApiError";
@@ -31,6 +32,7 @@ export class DealsService {
     ) {
         try {
             const response: CreateDealServiceResult = {
+                anotherDealExistsWithSameName: false,
                 notAssociatedWithAnyOrg: false,
                 deal: null,
                 notAuthorized: false,
@@ -52,6 +54,14 @@ export class DealsService {
                 response.notAssociatedWithAnyOrg = true;
                 logger.warn(
                     `Current user is not associated with any organisation currentUserOrg:${currentUser.organisation} currentUserId:${currentUser.id} for correlationId:${correlationId}`
+                );
+                return response;
+            }
+            const exists = await FindDealByName(name);
+            if (exists) {
+                response.anotherDealExistsWithSameName = true;
+                logger.warn(
+                    `Another deal exist with same name, name:${name} existingName:${exists.name} correlatinId${correlationId}`
                 );
                 return response;
             }
@@ -257,6 +267,7 @@ export class DealsService {
     ) {
         try {
             const response: UpdateDealServiceResult = {
+                anotherDealExistsWithSameName: false,
                 dealBelongToDifferentOrg: false,
                 assignedOwnerBelongToDifferentOrg: false,
                 assignedOwnerNotFound: false,
@@ -275,7 +286,7 @@ export class DealsService {
             }
             const deal = await FindDealById(dealId);
             if (!deal) {
-                response.notAuthorized = true;
+                response.notFound = true;
                 logger.warn(
                     `Deal not found dealId:${dealId} correlationId:${correlationId}`
                 );
@@ -287,6 +298,16 @@ export class DealsService {
                     `Deal belongs to different organisation dealId:${dealId} dealOrg:${deal.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
+            }
+            if (name) {
+                const exists = await FindDealByName(name);
+                if (exists) {
+                    response.anotherDealExistsWithSameName = true;
+                    logger.warn(
+                        `Another deal exist with same name, name:${name} existingName:${exists.name} correlatinId${correlationId}`
+                    );
+                    return response;
+                }
             }
             if (owner) {
                 // check if the assigned owner exists or not
@@ -440,6 +461,7 @@ export class DealsService {
 }
 
 type CreateDealServiceResult = {
+    anotherDealExistsWithSameName: boolean;
     notAssociatedWithAnyOrg: boolean;
     notAuthorized: boolean;
     assignedOwnerNotFound: boolean;
@@ -466,6 +488,7 @@ type UpdateDealServiceResult = {
     assignedOwnerBelongToDifferentOrg: boolean;
     someContactsNotFound: boolean;
     someContactsBelongToDifferentOrg: boolean;
+    anotherDealExistsWithSameName: boolean;
     deal: IDeals | null;
 };
 type DeleteOneDealServiceResult = {

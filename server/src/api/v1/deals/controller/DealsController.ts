@@ -68,6 +68,13 @@ export class DealsController {
                 priority,
                 stage
             );
+            if (result.anotherDealExistsWithSameName) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Another deal exist with same name",
+                    true
+                );
+            }
             if (result.notAssociatedWithAnyOrg) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
@@ -334,6 +341,13 @@ export class DealsController {
             logger.info(
                 `Call to updateDealService ended for correlatioId:${correlationId}`
             );
+            if (result.anotherDealExistsWithSameName) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Another deal exist with same name",
+                    true
+                );
+            }
             if (result.notAuthorized) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
