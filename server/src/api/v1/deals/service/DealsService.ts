@@ -1,16 +1,13 @@
 import { IDeals, IUsers } from "@/database";
 import { ROLE } from "@/database/enums";
-import {
-    FindAccountById,
-    FindOneUserById,
-    FindManyDealsByOrganisationId,
-} from "@/database/queries";
+import { FindAccountById, FindOneUserById } from "@/database/queries";
 import { FindContactById } from "@/database/queries/ContactQueries";
 import {
     CreateNewDeal,
     DeleteOneDealById,
     FindDealById,
     FindDealByIdAndUpdate,
+    FindManyDealsBy,
 } from "@/database/queries/DealsQueries";
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
@@ -141,14 +138,36 @@ export class DealsService {
     }
     async getAllDealsForCurrentOrgService(
         correlationId: string,
-        currentUser: IUsers
+        currentUser: IUsers,
+        account: string | undefined,
+        close_probability_gt: number,
+        close_probability_lt: number,
+        name: string | undefined,
+        owner: string | undefined,
+        priority: string | undefined,
+        stage: string | undefined,
+        value_gt: number,
+        value_lt: number,
+        limit: number,
+        page: number
     ) {
         try {
             const response: GetAllDealsForCurrentOrganisationServiceResult = {
                 deals: [],
             };
-            const deals = await FindManyDealsByOrganisationId(
-                currentUser.organisation
+            const deals = await FindManyDealsBy(
+                currentUser.organisation,
+                account,
+                close_probability_gt,
+                close_probability_lt,
+                name,
+                owner,
+                priority,
+                stage,
+                value_gt,
+                value_lt
+                limit,
+                page
             );
             logger.info(
                 `Retrieved the deals associated with organisationId:${currentUser.organisation} correlationId:${correlationId}`
@@ -357,7 +376,7 @@ export class DealsService {
             if (currentUser.role !== ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is does not have sufficient privileges to perform the action, action denied for contactId:${contactId} userRole:${user.role} correlationId:${correlationId}`
+                    `User is does not have sufficient privileges to perform the action, action denied for dealId:${dealId} userRole:${currentUser.role} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -373,7 +392,7 @@ export class DealsService {
             if (deal.organisation !== currentUser.organisation) {
                 response.dealBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Deal belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Deal belongs to a different organisation access denied for dealId:${dealId} contactOrg:${deal.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -383,7 +402,7 @@ export class DealsService {
                 !deletedResult.acknowledged
             ) {
                 logger.warn(
-                    `Couldn't delete the deal for unknown reason deleteResult:${deletedResult} contactId:${contactId}, for correlationId:${correlationId}`
+                    `Couldn't delete the deal for unknown reason deleteResult:${deletedResult} dealId:${dealId}, for correlationId:${correlationId}`
                 );
                 response.failed = true;
                 return response;

@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { FilterQuery, Schema } from "mongoose";
 import { Users } from "../schema/UsersSchema";
 import { ROLE } from "../enums/ERole";
 import { IUsers } from "../model/IUsers";
@@ -121,6 +121,49 @@ export async function FindManyUsersByOrganisationId(
     const users = await Users.find({
         organisation: organisationId,
     }).select("-password -refreshToken");
+    return users;
+}
+export async function FindManyUsersBy(
+    organisationId: Schema.Types.ObjectId,
+    limit: number,
+    page: number,
+    email: string | undefined,
+    username: string | undefined
+) {
+    const users = await Users.find(
+        {
+            $and: [
+                {
+                    organisation: organisationId,
+                },
+                {
+                    $or: [
+                        {
+                            email: email,
+                        },
+                        {
+                            $text: {
+                                $search: username ? username : "",
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            score: {
+                $meta: "textscore",
+            },
+        }
+    )
+        .select("-password -refreshToken")
+        .sort({
+            score: {
+                $meta: "textScore",
+            },
+        })
+        .limit(limit)
+        .skip((page - 1) * limit);
     return users;
 }
 export async function FindUserByIdAndUpdate(

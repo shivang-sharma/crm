@@ -10,7 +10,7 @@ const dealsSchema = new Schema<IDeals>(
             type: String,
             required: true,
             unique: true,
-            index: true,
+            text: true,
         },
         stage: {
             type: Number,

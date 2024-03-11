@@ -15,6 +15,46 @@ export async function FindManyContactsByOrganisationId(
     });
     return contacts;
 }
+export async function FindManyContactsBy(
+    organisationId: Schema.Types.ObjectId,
+    limit: number,
+    page: number,
+    account: string | undefined,
+    name: string | undefined,
+    priority: string | undefined,
+    status: string | undefined,
+    type: string | undefined
+) {
+    const contacts = await Contacts.find({
+        $and: [
+            {
+                organisation: organisationId,
+            },
+            {
+                $or: [
+                    {
+                        account: account,
+                    },
+                    {
+                        name: name,
+                    },
+                    {
+                        priority: priority,
+                    },
+                    {
+                        status: status,
+                    },
+                    {
+                        type: type,
+                    },
+                ],
+            },
+        ],
+    })
+        .limit(limit)
+        .skip((page - 1) * limit);
+    return contacts;
+}
 export async function FindContactById(id: string) {
     const contact = await Contacts.findById(id);
     return contact;

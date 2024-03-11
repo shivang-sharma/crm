@@ -14,6 +14,84 @@ export async function FindManyDealsByOrganisationId(
     });
     return deals;
 }
+export async function FindManyDealsBy(
+    organisationId: Schema.Types.ObjectId,
+    account: string | undefined,
+    close_probability_gt: number,
+    close_probability_lt: number,
+    name: string | undefined,
+    owner: string | undefined,
+    priority: string | undefined,
+    stage: string | undefined,
+    value_gt: number,
+    value_lt: number,
+    limit: number,
+    page: number
+) {
+    const deals = await Deals.find(
+        {
+            $and: [
+                {
+                    organisation: organisationId,
+                },
+                {
+                    $or: [
+                        {
+                            account: account,
+                        },
+                        {
+                            $text: {
+                                $search: name ? name : "",
+                            },
+                        },
+                        {
+                            owner: owner,
+                        },
+                        {
+                            priority: priority,
+                        },
+                        {
+                            stage: stage,
+                        },
+                        {
+                            "value.amount": {
+                                $gt: value_gt,
+                            },
+                        },
+                        {
+                            "value.amount": {
+                                $lt: value_lt,
+                            },
+                        },
+                        {
+                            closeProbability: {
+                                $gt: close_probability_gt,
+                            },
+                        },
+                        {
+                            closeProbability: {
+                                $lt: close_probability_lt,
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            score: {
+                $meta: "textscore",
+            },
+        }
+    )
+        .sort({
+            score: {
+                $meta: "textscore",
+            },
+        })
+        .limit(limit)
+        .skip((page - 1) * limit);
+    return deals;
+}
 export async function FindDealById(id: string) {
     const deal = await Deals.findById(id);
     return deal;
@@ -55,4 +133,15 @@ export async function RemoveContactFromDealsByContactId(contactId: string) {
         }
     );
     return updatedResult;
+}
+export async function FindManyDealsAndRemoveOwner(ownerId: string) {
+    const updateResult = await Deals.updateMany(
+        {
+            owner: ownerId,
+        },
+        {
+            owner: undefined,
+        }
+    );
+    return updateResult;
 }

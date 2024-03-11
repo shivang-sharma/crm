@@ -6,7 +6,7 @@ import {
     DeleteOneAccountById,
     FindAccountById,
     FindAccountByIdAndUpdate,
-    FindManyAccountsByOrganisationId,
+    FindManyAccountsBy,
 } from "@/database/queries";
 import { DeleteContactByAccountId } from "@/database/queries/ContactQueries";
 import { ApiError } from "@/utils/error/ApiError";
@@ -17,7 +17,7 @@ import mongoose from "mongoose";
 export class AccountsService {
     async createAccountService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         description: string,
         industry: string,
         name: string,
@@ -31,10 +31,10 @@ export class AccountsService {
                 account: null,
             };
             // If user has READ_ONLY role reject the request
-            if (user.role === ROLE.READ_ONLY) {
+            if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `Account creation failed because user has READ_ONLY roles, User: ${user.toJSON()} correlationId:${correlationId}`
+                    `Account creation failed because user has READ_ONLY roles, User: ${currentUser.toJSON()} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -49,7 +49,7 @@ export class AccountsService {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 }).filter(([key, value]) => value !== undefined)
             );
-            newAccountData.organisation = user.organisation;
+            newAccountData.organisation = currentUser.organisation;
             const newAccount = await CreateAccount(newAccountData);
             logger.info(
                 `Account created ${newAccount.toJSON()} correlationId:${correlationId}`
@@ -71,18 +71,32 @@ export class AccountsService {
     }
     async getAllAccountsForCurrentOrgService(
         correlationId: string,
-        user: IUsers
+        currentUser: IUsers,
+        limit: number,
+        page: number,
+        industry: string | undefined,
+        name: string | undefined,
+        priority: string | undefined,
+        size: string | undefined,
+        type: string | undefined
     ) {
         try {
             const response: GetAllAccountsForCurrentOrganisationServiceResult =
                 {
                     accounts: [],
                 };
-            const accounts = await FindManyAccountsByOrganisationId(
-                user.organisation
+            const accounts = await FindManyAccountsBy(
+                currentUser.organisation,
+                limit,
+                page,
+                industry,
+                name,
+                priority,
+                size,
+                type
             );
             logger.info(
-                `Retrieved the accounts associated with organisationId:${user.organisation} correlationId:${correlationId}`
+                `Retrieved the accounts associated with organisationId:${currentUser.organisation} correlationId:${correlationId}`
             );
             response.accounts = accounts;
             return response;
@@ -101,7 +115,7 @@ export class AccountsService {
     }
     async getOneAccountService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         accountId: string
     ) {
         try {
@@ -119,10 +133,10 @@ export class AccountsService {
                 return response;
             }
             // if the account belong to different org reject the request
-            if (account.organisation !== user.organisation) {
+            if (account.organisation !== currentUser.organisation) {
                 response.accountBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -146,7 +160,7 @@ export class AccountsService {
     }
     async updateAccountService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         accountId: string,
         description: string | undefined,
         industry: string | undefined,
@@ -174,7 +188,7 @@ export class AccountsService {
                 return response;
             }
             // If user has READ_ONLY role then reject
-            if (user.role === ROLE.READ_ONLY) {
+            if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User has READ_ONLY role, action denied, correlationId:${correlationId}`
@@ -182,10 +196,10 @@ export class AccountsService {
                 return response;
             }
             // If user does not belong to the same org reject
-            if (user.organisation !== account.organisation) {
+            if (currentUser.organisation !== account.organisation) {
                 response.accountBelongToDifferentOrg = true;
                 logger.warn(
-                    `Account belong to a different organisation, action denied userOrg:${user.organisation} accountOrg:${account.organisation} correlationId:${correlationId}`
+                    `Account belong to a different organisation, action denied userOrg:${currentUser.organisation} accountOrg:${account.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -231,7 +245,7 @@ export class AccountsService {
     }
     async deleteOneAccountService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         accountId: string
     ) {
         const session = await mongoose.startSession();
@@ -246,10 +260,10 @@ export class AccountsService {
                 failed: false,
                 account: null,
             };
-            if (user.role != ROLE.ADMIN) {
+            if (currentUser.role != ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User does not have sufficient privileges to perform the action, action denied userRole:${user.role} for correlationId:${correlationId}`
+                    `User does not have sufficient privileges to perform the action, action denied userRole:${currentUser.role} for correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -262,10 +276,10 @@ export class AccountsService {
                 return response;
             }
             // if the account belong to different org reject the request
-            if (account.organisation !== user.organisation) {
+            if (account.organisation !== currentUser.organisation) {
                 response.accountBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Account belongs to a different organisation access denied for accountId:${accountId} accountOrg:${account.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }

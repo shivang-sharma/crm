@@ -8,6 +8,7 @@ import { StatusCodes } from "http-status-codes";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { ZContactId } from "../zschema/ZContactId";
 import { ZUpdateContactInputSchema } from "../zschema/ZUpdateContactInputSchema";
+import { ZGetAllContactInputSchema } from "../zschema/ZGetAllContactInputSchema";
 
 export class ContactsController {
     private service: ContactsService;
@@ -16,7 +17,7 @@ export class ContactsController {
     }
     CreateContact = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `CreateContact request recieved for correlationId: ${correlationId}`
         );
@@ -37,7 +38,7 @@ export class ContactsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             logger.info(
                 `Validation successfull for CreateContact request payload for correlationId: ${correlationId}`
             );
@@ -56,7 +57,7 @@ export class ContactsController {
             );
             const result = await this.service.createContactService(
                 correlationId,
-                user,
+                currentUser,
                 email,
                 name,
                 phone,
@@ -113,11 +114,33 @@ export class ContactsController {
     };
     GetAllContacts = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetAllContacts request recieved for correlationId: ${correlationId}`
         );
-        if (user) {
+        logger.info(
+            `Validating the request payload for GetAllContact request payload:${req.params} for correlationId:${correlationId}`
+        );
+        const validationResult = ZGetAllContactInputSchema.safeParse(
+            req.params
+        );
+        if (!validationResult.success) {
+            logger.warn(
+                `Validation failed for GetAllContact request payload, errors: ${validationResult.error.errors} for correlationId:${correlationId}`
+            );
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                "Invalid input",
+                true,
+                validationResult.error.errors
+            );
+        }
+        if (currentUser) {
+            const { limit, page, account, name, priority, status, type } =
+                validationResult.data;
+            logger.info(
+                `Validation for GetAllContact request payload successfull for correlationId:${correlationId}`
+            );
             logger.info(
                 `Attempting to call getAllContactsForCurrentOrgService correlationId:${correlationId}`
             );
@@ -125,7 +148,14 @@ export class ContactsController {
             const result =
                 await this.service.getAllContactsForCurrentOrgService(
                     correlationId,
-                    user
+                    currentUser,
+                    limit,
+                    page,
+                    account,
+                    name,
+                    priority,
+                    status,
+                    type
                 );
             logger.info(
                 `Call to getAllContactsForCurrentOrgService ended successfully correlationId:${correlationId}`
@@ -143,7 +173,7 @@ export class ContactsController {
     };
     GetOneContact = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetOneContact request recieved for correlationId: ${correlationId}`
         );
@@ -164,7 +194,7 @@ export class ContactsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { contactId } = validationResult.data;
             logger.info(
                 `Validation successfull for GetOneContact request for correlationId:${correlationId}`
@@ -174,7 +204,7 @@ export class ContactsController {
             );
             const result = await this.service.getOneContactService(
                 correlationId,
-                user,
+                currentUser,
                 contactId
             );
             logger.info(
@@ -207,7 +237,7 @@ export class ContactsController {
     };
     UpdateContact = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `UpdateContact request recieved for correlationId: ${correlationId}`
         );
@@ -231,7 +261,7 @@ export class ContactsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const {
                 contactId,
                 account,
@@ -251,7 +281,7 @@ export class ContactsController {
             );
             const result = await this.service.updateContactService(
                 correlationId,
-                user,
+                currentUser,
                 contactId,
                 account,
                 email,
@@ -316,7 +346,7 @@ export class ContactsController {
     };
     DeleteContact = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `DeleteContact request recieved for correlationId: ${correlationId}`
         );
@@ -337,7 +367,7 @@ export class ContactsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { contactId } = validationResult.data;
             logger.info(
                 `Validation successfull for DeleteContact request for correlationId:${correlationId}`
@@ -347,7 +377,7 @@ export class ContactsController {
             );
             const result = await this.service.deleteOneContactService(
                 correlationId,
-                user,
+                currentUser,
                 contactId
             );
             logger.info(

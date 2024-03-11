@@ -14,6 +14,50 @@ export async function FindManyAccountsByOrganisationId(
     });
     return accounts;
 }
+export async function FindManyAccountsBy(
+    organisationId: Schema.Types.ObjectId,
+    limit: number,
+    page: number,
+    industry: string | undefined,
+    name: string | undefined,
+    priority: string | undefined,
+    size: string | undefined,
+    type: string | undefined
+) {
+    const accounts = await Accounts.find({
+        $and: [
+            {
+                organisation: organisationId,
+            },
+            {
+                $or: [
+                    {
+                        $text: {
+                            $search: industry ? industry : "",
+                        },
+                    },
+                    {
+                        $text: {
+                            $search: name ? name : "",
+                        },
+                    },
+                    {
+                        priority: priority,
+                    },
+                    {
+                        size: size,
+                    },
+                    {
+                        type: type,
+                    },
+                ],
+            },
+        ],
+    })
+        .limit(limit)
+        .skip((page - 1) * limit);
+    return accounts;
+}
 export async function FindAccountById(id: string) {
     const account = await Accounts.findById(id);
     return account;

@@ -8,6 +8,7 @@ import { StatusCodes } from "http-status-codes";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { ZDealId } from "../zschema/ZDealId";
 import { ZUpdateDealInputSchema } from "../zschema/ZUpdateDealInputSchema";
+import { ZGetAllDealsInputSchema } from "../zschema/ZGetAllDealsInputSchema";
 
 export class DealsController {
     private service: DealsService;
@@ -136,14 +137,56 @@ export class DealsController {
         logger.info(
             `GetAllDeals request recieved for correlationId: ${correlationId}`
         );
+        logger.info(
+            `Validating the GetAllDeals request payload, payload:${req.params} for correlationId:${correlationId}`
+        );
+        const validationResult = ZGetAllDealsInputSchema.safeParse(req.params);
+        if (!validationResult.success) {
+            logger.warn(
+                `Validation failed for GetAllDeals request payload, errors:${validationResult.error.errors} for correlationId:${correlationId}`
+            );
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                "Invalid input",
+                true,
+                validationResult.error.errors
+            );
+        }
         if (currentUser) {
+            const {
+                account,
+                close_probability_gt,
+                close_probability_lt,
+                name,
+                owner,
+                priority,
+                stage,
+                value_gt,
+                value_lt,
+                limit,
+                page,
+            } = validationResult.data;
+            logger.info(
+                `Validation successfull for GenAllDeals request for correlationId:${correlationId}`
+            );
             logger.info(
                 `Attempting to call getAllDealsForCurrentOrgService correlationId:${correlationId}`
             );
             // TODO: Pagination and filter quries
             const result = await this.service.getAllDealsForCurrentOrgService(
                 correlationId,
-                currentUser
+                currentUser,
+                account,
+                close_probability_gt,
+                close_probability_lt,
+                name,
+                owner,
+                priority,
+                stage,
+                value_gt,
+                value_lt,
+                limit,
+                page
             );
             logger.info(
                 `Call to getAllDealsForCurrentOrgService ended successfully correlationId:${correlationId}`

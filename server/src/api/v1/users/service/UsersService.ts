@@ -1,12 +1,13 @@
 import { IUsers } from "@/database";
 import { ROLE } from "@/database/enums";
 import {
-    FindManyUsersByOrganisationId,
     FindOneUserById,
     FindUserByIdAndUpdateOrganisationAndRole,
     FindUserByIdAndUpdateRole,
     FindUserByIdAndUpdate,
     FindUserByIdAndDelete,
+    FindManyDealsAndRemoveOwner,
+    FindManyUsersBy,
 } from "@/database/queries";
 import { FindManyLeadsAndRemoveOwner } from "@/database/queries/LeadQueries";
 import { ApiError } from "@/utils/error/ApiError";
@@ -14,16 +15,27 @@ import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
 export class UsersService {
-    async getAllUsersForCurrentOrgService(correlationId: string, user: IUsers) {
+    async getAllUsersForCurrentOrgService(
+        correlationId: string,
+        currentUser: IUsers,
+        limit: number,
+        page: number,
+        email: string | undefined,
+        username: string | undefined
+    ) {
         try {
             const response: GetAllUsersForCurrentOrganisationServiceResult = {
                 users: [],
             };
-            const users = await FindManyUsersByOrganisationId(
-                user.organisation
+            const users = await FindManyUsersBy(
+                currentUser.organisation,
+                limit,
+                page,
+                email,
+                username
             );
             logger.info(
-                `Retrieved the users associated with organisationId:${user.organisation} correlationId:${correlationId}`
+                `Retrieved the users associated with organisationId:${currentUser.organisation} correlationId:${correlationId}`
             );
             response.users = users;
             return response;
@@ -42,7 +54,7 @@ export class UsersService {
     }
     async getOneUserService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         userId: string
     ) {
         try {
@@ -59,10 +71,10 @@ export class UsersService {
                 );
                 return response;
             }
-            if (userObj.organisation !== user.organisation) {
+            if (userObj.organisation !== currentUser.organisation) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
-                    `User belong to a different organisation userOrg:${userObj.organisation} currentUserOrg:${user.organisation}`
+                    `User belong to a different organisation userOrg:${userObj.organisation} currentUserOrg:${currentUser.organisation}`
                 );
                 return response;
             }
@@ -86,7 +98,7 @@ export class UsersService {
     }
     async changeRoleService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         userId: string,
         role: string
     ) {
@@ -97,10 +109,10 @@ export class UsersService {
                 notAuthorized: false,
                 notFound: false,
             };
-            if (user.role !== ROLE.ADMIN) {
+            if (currentUser.role !== ROLE.ADMIN) {
                 response.notAuthorized = false;
                 logger.warn(
-                    `User not authorized to perform the action, userId:${user.id} correlationId:${correlationId}`
+                    `User not authorized to perform the action, userId:${currentUser.id} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -112,10 +124,10 @@ export class UsersService {
                 );
                 return response;
             }
-            if (user.organisation !== userObj.organisation) {
+            if (currentUser.organisation !== userObj.organisation) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
-                    `User belongs to a different organisation userOrg${userObj.organisation} currentUserOrg:${user.organisation} correlationId:${correlationId}`
+                    `User belongs to a different organisation userOrg${userObj.organisation} currentUserOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
             }
             const updatedUser = await FindUserByIdAndUpdateRole(
@@ -146,24 +158,26 @@ export class UsersService {
     }
     async removeFromOrganisationService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         userId: string
     ) {
         const session = await mongoose.startSession();
         try {
             const response: ChangeRoleServiceResult & {
                 noOfLeadsModified: number;
+                noOfDealsModified: number;
             } = {
                 notAuthorized: false,
                 notFound: false,
                 user: null,
                 noOfLeadsModified: 0,
+                noOfDealsModified: 0,
                 userBelongToDifferentOrg: false,
             };
-            if (user.role != ROLE.ADMIN) {
+            if (currentUser.role != ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User does not have sufficient privileges to perform the action userRole:${user.role} for correlationId:${correlationId}`
+                    `User does not have sufficient privileges to perform the action userRole:${currentUser.role} for correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -175,10 +189,10 @@ export class UsersService {
                 );
                 return response;
             }
-            if (userObj.organisation !== user.organisation) {
+            if (userObj.organisation !== currentUser.organisation) {
                 response.userBelongToDifferentOrg = true;
                 logger.warn(
-                    `User belongs to a different organisation action denied, userOrg:${userObj.organisation} currentUserOrg:${user.organisation} for correlationId:${correlationId}`
+                    `User belongs to a different organisation action denied, userOrg:${userObj.organisation} currentUserOrg:${currentUser.organisation} for correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -206,7 +220,11 @@ export class UsersService {
             logger.info(
                 `User removed as owner from all the leads user owned userId:${userId}, noOfLeadsModified:${updateResult.modifiedCount}, changesAcknowledged:${updateResult.acknowledged} for correlationId:${correlationId}`
             );
-            // TODO: Remove this user as owner from all the deals user owned
+            const dealsUpdateResult = await FindManyDealsAndRemoveOwner(userId);
+            response.noOfDealsModified = dealsUpdateResult.modifiedCount;
+            logger.info(
+                `User removed as owner from all the deals user owned userId:${userId}, noOfDealsModified:${dealsUpdateResult.modifiedCount}, changesAcknowledged:${updateResult.acknowledged} for correlationId:${correlationId}`
+            );
             await session.commitTransaction();
             await session.endSession();
             return response;
@@ -230,7 +248,7 @@ export class UsersService {
     }
     async updateUserService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         userId: string,
         name: { fname?: string; lname?: string } | undefined
     ) {
@@ -240,7 +258,7 @@ export class UsersService {
                 notAuthorized: false,
                 user: null,
             };
-            if (user.id !== userId && user.role !== ROLE.ADMIN) {
+            if (currentUser.id !== userId && currentUser.role !== ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
                     `Cannot update other users details unless you have an ADMIN role, action denied for correlationId:${correlationId}`
@@ -287,7 +305,7 @@ export class UsersService {
     }
     async deleteUserService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         userId: string
     ) {
         const session = await mongoose.startSession();
@@ -299,10 +317,10 @@ export class UsersService {
                 notAuthorized: false,
                 user: null,
             };
-            if (user.id !== userId) {
+            if (currentUser.id !== userId) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User tried to delete another user, action denied currentUser:${user.id} attemptedDeleteOnUserId:${userId} correlatioId:${correlationId}`
+                    `User tried to delete another user, action denied currentUser:${currentUser.id} attemptedDeleteOnUserId:${userId} correlatioId:${correlationId}`
                 );
                 await session.abortTransaction();
                 await session.endSession();

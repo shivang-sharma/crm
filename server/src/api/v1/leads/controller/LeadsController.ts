@@ -9,6 +9,7 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { ZLeadId } from "../zschema/ZLeadId";
 import { ZChangeStatusInputSchema } from "../zschema/ZChangeStatusInputSchema";
 import { ZUpdateLeadInputSchema } from "../zschema/ZUpdateLeadInputSchema";
+import { ZGetAllLeadsInputSchema } from "../zschema/ZGetAllLeadsInputSchema";
 
 export class LeadsController {
     private service: LeadsService;
@@ -17,7 +18,7 @@ export class LeadsController {
     }
     CreateLead = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `CreateLead request recieved for correlationId: ${correlationId}`
         );
@@ -38,7 +39,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             logger.info(
                 `Validation successfull for CreateLead request payload for correlationId: ${correlationId}`
             );
@@ -58,7 +59,7 @@ export class LeadsController {
             );
             const result = await this.service.createLeadService(
                 correlationId,
-                user,
+                currentUser,
                 company,
                 email,
                 name,
@@ -123,7 +124,7 @@ export class LeadsController {
     };
     MoveToContact = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `MoveToContact request recieved for correlationId: ${correlationId}`
         );
@@ -144,7 +145,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { leadId } = validationResult.data;
             logger.info(
                 `Validation successfull for MoveToContact request for correlationId:${correlationId}`
@@ -154,7 +155,7 @@ export class LeadsController {
             );
             const result = await this.service.moveToContactService(
                 correlationId,
-                user,
+                currentUser,
                 leadId
             );
             logger.info(
@@ -204,11 +205,33 @@ export class LeadsController {
     };
     GetAllLeads = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetAllLeads request recieved for correlationId: ${correlationId}`
         );
-        if (user) {
+        logger.info(
+            `Validating the GetAllLeads request payload, payload: ${req.params} for correlationId:${correlationId}`
+        );
+        const validationResult = ZGetAllLeadsInputSchema.safeParse(req.params);
+        if (!validationResult.success) {
+            logger.warn(
+                `Validation failed for GetAllLeads request error:${JSON.stringify(
+                    validationResult.error.errors
+                )} for correlationId:${correlationId}`
+            );
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                "Invalid input",
+                true,
+                validationResult.error.errors
+            );
+        }
+        if (currentUser) {
+            const { limit, page, comments, name, owner, status } =
+                validationResult.data;
+            logger.info(
+                `Validation for GetAllLeads request payload successfull for correlationId:${correlationId}`
+            );
             logger.info(
                 `Attempting to call getAllLeadsForCurrentOrgService correlationId:${correlationId}`
             );
@@ -216,7 +239,13 @@ export class LeadsController {
             const result =
                 await this.service.getAllLeadForCurrentOrganisationService(
                     correlationId,
-                    user
+                    currentUser,
+                    limit,
+                    page,
+                    comments,
+                    name,
+                    owner,
+                    status
                 );
             logger.info(
                 `Call to getAllLeadsForCurrentOrgService ended successfully correlationId:${correlationId}`
@@ -234,7 +263,7 @@ export class LeadsController {
     };
     GetOneLead = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetOneLead request recieved for correlationId: ${correlationId}`
         );
@@ -255,7 +284,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { leadId } = validationResult.data;
             logger.info(
                 `Validation successfull for GetOneLead request for correlationId:${correlationId}`
@@ -265,7 +294,7 @@ export class LeadsController {
             );
             const result = await this.service.getOneLeadService(
                 correlationId,
-                user,
+                currentUser,
                 leadId
             );
             logger.info(
@@ -294,7 +323,7 @@ export class LeadsController {
     };
     ChangeStatus = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `ChangeStatus request recieved for correlationId: ${correlationId}`
         );
@@ -319,7 +348,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { leadId, status } = validationResult.data;
             logger.info(
                 `Validation successfull for ChangeStatus request payload for correlationId:${correlationId}`
@@ -329,7 +358,7 @@ export class LeadsController {
             );
             const result = await this.service.changeStatusService(
                 correlationId,
-                user,
+                currentUser,
                 leadId,
                 status
             );
@@ -363,7 +392,7 @@ export class LeadsController {
     };
     UpdateLead = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `UpdateLead request recieved for correlationId: ${correlationId}`
         );
@@ -387,7 +416,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const {
                 leadId,
                 comments,
@@ -408,7 +437,7 @@ export class LeadsController {
             );
             const result = await this.service.updateLeadService(
                 correlationId,
-                user,
+                currentUser,
                 leadId,
                 comments,
                 company,
@@ -481,7 +510,7 @@ export class LeadsController {
     };
     DeleteLead = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `DeleteLead request recieved for correlationId: ${correlationId}`
         );
@@ -502,7 +531,7 @@ export class LeadsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { leadId } = validationResult.data;
             logger.info(
                 `Validation successfull for DeleteLead request for correlationId:${correlationId}`
@@ -512,7 +541,7 @@ export class LeadsController {
             );
             const result = await this.service.deleteOneLeadService(
                 correlationId,
-                user,
+                currentUser,
                 leadId
             );
             logger.info(

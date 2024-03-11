@@ -8,6 +8,7 @@ import { StatusCodes } from "http-status-codes";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { ZAccountId } from "../zschema/ZAccountId";
 import { ZUpdateAccountInputSchema } from "../zschema/ZUpdateAccountInputSchema";
+import { ZGetAllAccountInputSchema } from "../zschema/ZGetAllAccountInputSchema";
 
 export class AccountsController {
     private service: AccountsService;
@@ -16,7 +17,7 @@ export class AccountsController {
     }
     CreateAccount = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `CreateNewAccount request recieved for correlationId: ${correlationId}`
         );
@@ -34,7 +35,7 @@ export class AccountsController {
                 true
             );
         }
-        if (user) {
+        if (currentUser) {
             logger.info(
                 `Validation successfull for CreateAccount request payload for correlationId:${correlationId}`
             );
@@ -45,7 +46,7 @@ export class AccountsController {
             );
             const result = await this.service.createAccountService(
                 correlationId,
-                user,
+                currentUser,
                 description,
                 industry,
                 name,
@@ -76,11 +77,35 @@ export class AccountsController {
     };
     GetAllAccount = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetAllAccount request recieved for correlationId: ${correlationId}`
         );
-        if (user) {
+        logger.info(
+            `Validating the GetAllAccount request payload, payload ${req.params} for correlationId:${correlationId}`
+        );
+        const validationResult = ZGetAllAccountInputSchema.safeParse(
+            req.params
+        );
+        if (!validationResult.success) {
+            logger.warn(
+                `Validation failed for GetAllAccount request payload, errors:${JSON.stringify(
+                    validationResult.error.errors
+                )} for correlationId:${correlationId}`
+            );
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                "Invalid input",
+                true,
+                validationResult.error.errors
+            );
+        }
+        if (currentUser) {
+            const { limit, page, industry, name, priority, size, type } =
+                validationResult.data;
+            logger.info(
+                `Validation successfull for GetAllAccount request payload for correlationId:${correlationId} `
+            );
             logger.info(
                 `Attempting to call getAllAccountsForCurrentOrgService correlationId:${correlationId}`
             );
@@ -88,7 +113,14 @@ export class AccountsController {
             const result =
                 await this.service.getAllAccountsForCurrentOrgService(
                     correlationId,
-                    user
+                    currentUser,
+                    limit,
+                    page,
+                    industry,
+                    name,
+                    priority,
+                    size,
+                    type
                 );
             logger.info(
                 `Call to getAllAccountsForCurrentOrgService ended successfully correlationId:${correlationId}`
@@ -106,7 +138,7 @@ export class AccountsController {
     };
     GetOneAccount = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetOneAccount request recieved for correlationId: ${correlationId}`
         );
@@ -127,7 +159,7 @@ export class AccountsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { accountId } = validationResult.data;
             logger.info(
                 `Validation successfull for GetOneAccount request for correlationId:${correlationId}`
@@ -137,7 +169,7 @@ export class AccountsController {
             );
             const result = await this.service.getOneAccountService(
                 correlationId,
-                user,
+                currentUser,
                 accountId
             );
             logger.info(
@@ -170,7 +202,7 @@ export class AccountsController {
     };
     UpdateAccount = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `UpdateAccount request recieved for correlationId: ${correlationId}`
         );
@@ -194,7 +226,7 @@ export class AccountsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const {
                 accountId,
                 description,
@@ -212,7 +244,7 @@ export class AccountsController {
             );
             const result = await this.service.updateAccountService(
                 correlationId,
-                user,
+                currentUser,
                 accountId,
                 description,
                 industry,
@@ -261,7 +293,7 @@ export class AccountsController {
     };
     DeleteAccount = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `DeleteAccount request recieved for correlationId: ${correlationId}`
         );
@@ -282,7 +314,7 @@ export class AccountsController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { accountId } = validationResult.data;
             logger.info(
                 `Validation successfull for DeleteAccount request for correlationId:${correlationId}`
@@ -292,7 +324,7 @@ export class AccountsController {
             );
             const result = await this.service.deleteOneAccountService(
                 correlationId,
-                user,
+                currentUser,
                 accountId
             );
             logger.info(

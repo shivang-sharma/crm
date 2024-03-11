@@ -13,7 +13,7 @@ const usersSchema = new Schema<IUsers>(
             unique: true,
             lowercase: true,
             trim: true,
-            index: true,
+            text: true,
         },
         name: {
             fname: {

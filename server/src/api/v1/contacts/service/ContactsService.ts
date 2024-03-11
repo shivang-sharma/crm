@@ -11,7 +11,7 @@ import {
     DeleteOneContactById,
     FindContactById,
     FindContactByIdAndUpdate,
-    FindManyContactsByOrganisationId,
+    FindManyContactsBy,
 } from "@/database/queries/ContactQueries";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "@/utils/error/ApiError";
@@ -20,7 +20,7 @@ import mongoose from "mongoose";
 export class ContactsService {
     async createContactService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         email: string,
         name: string,
         phoneNumber: { country?: string; number: string },
@@ -39,10 +39,10 @@ export class ContactsService {
                 contact: null,
             };
             // If user has READ_ONLY role reject the request
-            if (user.role === ROLE.READ_ONLY) {
+            if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `Contact creation failed because user has READ_ONLY roles, User: ${user.toJSON()} correlationId:${correlationId}`
+                    `Contact creation failed because user has READ_ONLY roles, User: ${currentUser.toJSON()} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -57,11 +57,11 @@ export class ContactsService {
                     );
                     return response;
                 }
-                if (accountObj.organisation !== user.organisation) {
+                if (accountObj.organisation !== currentUser.organisation) {
                     // reject account does not belong to the same org
                     response.accountBelongToDifferentOrg = true;
                     logger.warn(
-                        `Assigned account belong to a different organisation accountId:${account}, accountOrganisation:${accountObj.organisation}, userOrg:${user.organisation} correlationId:${correlationId}`
+                        `Assigned account belong to a different organisation accountId:${account}, accountOrganisation:${accountObj.organisation}, userOrg:${currentUser.organisation} correlationId:${correlationId}`
                     );
                     return response;
                 }
@@ -93,7 +93,7 @@ export class ContactsService {
                     countryIso3: phoneData.countryIso3,
                     number: phoneData.phoneNumber,
                 };
-                newContactData.organisation = user.organisation;
+                newContactData.organisation = currentUser.organisation;
                 const newContact = await CreateNewContact(newContactData);
                 logger.info(
                     `Contact created ${newContact.toJSON()} correlationId:${correlationId}`
@@ -122,18 +122,32 @@ export class ContactsService {
     }
     async getAllContactsForCurrentOrgService(
         correlationId: string,
-        user: IUsers
+        currentUser: IUsers,
+        limit: number,
+        page: number,
+        account: string | undefined,
+        name: string | undefined,
+        priority: string | undefined,
+        status: string | undefined,
+        type: string | undefined
     ) {
         try {
             const response: GetAllContactsForCurrentOrganisationServiceResult =
                 {
                     contacts: [],
                 };
-            const contacts = await FindManyContactsByOrganisationId(
-                user.organisation
+            const contacts = await FindManyContactsBy(
+                currentUser.organisation,
+                limit,
+                page,
+                account,
+                name,
+                priority,
+                status,
+                type
             );
             logger.info(
-                `Retrieved the contacts associated with organisationId:${user.organisation} correlationId:${correlationId}`
+                `Retrieved the contacts associated with organisationId:${currentUser.organisation} correlationId:${correlationId}`
             );
             response.contacts = contacts;
             return response;
@@ -152,7 +166,7 @@ export class ContactsService {
     }
     async getOneContactService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         contactId: string
     ) {
         try {
@@ -170,10 +184,10 @@ export class ContactsService {
                 return response;
             }
             // if the contact belong to different org reject the request
-            if (contact.organisation !== user.organisation) {
+            if (contact.organisation !== currentUser.organisation) {
                 response.contactBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -197,7 +211,7 @@ export class ContactsService {
     }
     async updateContactService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         contactId: string,
         account: string | undefined,
         email: string | undefined,
@@ -219,10 +233,10 @@ export class ContactsService {
                     phoneNumberNotValid: false,
                 };
             // If user has READ_ONLY role reject the request
-            if (user.role === ROLE.READ_ONLY) {
+            if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `Contact updation failed because user has READ_ONLY roles, User: ${user.toJSON()} correlationId:${correlationId}`
+                    `Contact updation failed because user has READ_ONLY roles, User: ${currentUser.toJSON()} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -245,11 +259,11 @@ export class ContactsService {
                     );
                     return response;
                 }
-                if (accountObj.organisation !== user.organisation) {
+                if (accountObj.organisation !== currentUser.organisation) {
                     // reject account does not belong to the same org
                     response.accountBelongToDifferentOrg = true;
                     logger.warn(
-                        `Assigned account belong to a different organisation accountId:${account}, accountOrganisation:${accountObj.organisation}, userOrg:${user.organisation} correlationId:${correlationId}`
+                        `Assigned account belong to a different organisation accountId:${account}, accountOrganisation:${accountObj.organisation}, userOrg:${currentUser.organisation} correlationId:${correlationId}`
                     );
                     return response;
                 }
@@ -316,7 +330,7 @@ export class ContactsService {
     }
     async deleteOneContactService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         contactId: string
     ) {
         const session = await mongoose.startSession();
@@ -329,10 +343,10 @@ export class ContactsService {
                 failed: false,
                 notAuthorized: false,
             };
-            if (user.role !== ROLE.ADMIN) {
+            if (currentUser.role !== ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is does not have sufficient privileges to perform the action, action denied for contactId:${contactId} userRole:${user.role} correlationId:${correlationId}`
+                    `User is does not have sufficient privileges to perform the action, action denied for contactId:${contactId} userRole:${currentUser.role} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -345,10 +359,10 @@ export class ContactsService {
                 return response;
             }
             // if the contact belong to different org reject the request
-            if (contact.organisation !== user.organisation) {
+            if (contact.organisation !== currentUser.organisation) {
                 response.contactBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Contact belongs to a different organisation access denied for contactId:${contactId} contactOrg:${contact.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }

@@ -7,7 +7,7 @@ import {
     DeleteOneLeadById,
     FindLeadById,
     FindLeadByIdAndUpdate,
-    FindManyLeadsByOrganisationId,
+    FindManyLeadsBy,
 } from "@/database/queries/LeadQueries";
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
@@ -18,7 +18,7 @@ import phone from "phone";
 export class LeadsService {
     async createLeadService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         company: string,
         email: string,
         name: string,
@@ -39,10 +39,10 @@ export class LeadsService {
                 lead: null,
             };
             // If user has READ_ONLY role reject the request
-            if (user.role === ROLE.READ_ONLY) {
+            if (currentUser.role === ROLE.READ_ONLY) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `Lead creation failed because user has READ_ONLY roles, User: ${user.toJSON()} correlationId:${correlationId}`
+                    `Lead creation failed because user has READ_ONLY roles, User: ${currentUser.toJSON()} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -65,11 +65,11 @@ export class LeadsService {
                     );
                     return response;
                 }
-                if (ownerObj.organisation !== user.organisation) {
+                if (ownerObj.organisation !== currentUser.organisation) {
                     // reject owner does not belong to the same org
                     response.assignedOwnerBelongToDifferentOrg = true;
                     logger.warn(
-                        `Assigned owner belong to a different organisation assignedOwnerId:${owner}, assignedOwnerOrganisation:${ownerObj.organisation}, userOrg:${user.organisation} correlationId:${correlationId}`
+                        `Assigned owner belong to a different organisation assignedOwnerId:${owner}, assignedOwnerOrganisation:${ownerObj.organisation}, userOrg:${currentUser.organisation} correlationId:${correlationId}`
                     );
                     return response;
                 }
@@ -102,7 +102,7 @@ export class LeadsService {
                     countryIso3: phoneData.countryIso3,
                     number: phoneData.phoneNumber,
                 };
-                newLeadData.organisation = user.organisation;
+                newLeadData.organisation = currentUser.organisation;
                 const newLead = await CreateNewLead(newLeadData);
                 logger.info(
                     `Lead created ${newLead.toJSON()} correlationId:${correlationId}`
@@ -130,7 +130,7 @@ export class LeadsService {
     }
     async moveToContactService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         leadId: string
     ) {
         // Starting transaction
@@ -151,18 +151,18 @@ export class LeadsService {
                 );
                 return response;
             }
-            if (lead.organisation === user.organisation) {
+            if (lead.organisation === currentUser.organisation) {
                 response.leadBelongToDifferentOrg = true;
                 logger.warn(
-                    `Lead belong to a different organisation, leadOrgId:${lead.organisation} userOrg:${user.organisation} for correlationId:${correlationId}`
+                    `Lead belong to a different organisation, leadOrgId:${lead.organisation} userOrg:${currentUser.organisation} for correlationId:${correlationId}`
                 );
                 return response;
             }
             // If the user is not the owner of the lead then reject the request
-            if (user.id !== lead.owner) {
+            if (currentUser.id !== lead.owner) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is not the owner of the Lead, leadId:${leadId}, ownerId:${lead.owner}, userId:${user.id} for correlationId:${correlationId}`
+                    `User is not the owner of the Lead, leadId:${leadId}, ownerId:${lead.owner}, userId:${currentUser.id} for correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -229,17 +229,29 @@ export class LeadsService {
     }
     async getAllLeadForCurrentOrganisationService(
         correlationId: string,
-        user: IUsers
+        currentUser: IUsers,
+        limit: number,
+        page: number,
+        comments: string | undefined,
+        name: string | undefined,
+        owner: string | undefined,
+        status: string | undefined
     ) {
         try {
             const response: GetAllLeadForCurrentOrganisationServiceResult = {
                 leads: [],
             };
-            const leads = await FindManyLeadsByOrganisationId(
-                user.organisation
+            const leads = await FindManyLeadsBy(
+                currentUser.organisation,
+                limit,
+                page,
+                comments,
+                name,
+                owner,
+                status
             );
             logger.info(
-                `Retrieved the leads associated with organisationId:${user.organisation} correlationId:${correlationId}`
+                `Retrieved the leads associated with organisationId:${currentUser.organisation} correlationId:${correlationId}`
             );
             response.leads = leads;
             return response;
@@ -258,7 +270,7 @@ export class LeadsService {
     }
     async getOneLeadService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         leadId: string
     ) {
         try {
@@ -276,10 +288,10 @@ export class LeadsService {
                 return response;
             }
             // if the lead belong to different org reject the request
-            if (lead.organisation !== user.organisation) {
+            if (lead.organisation !== currentUser.organisation) {
                 response.leadBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -303,7 +315,7 @@ export class LeadsService {
     }
     async changeStatusService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         leadId: string,
         status: string
     ) {
@@ -322,10 +334,10 @@ export class LeadsService {
                 return response;
             }
             // if user is not the owner of the lead then reject
-            if (lead.owner !== user.id) {
+            if (lead.owner !== currentUser.id) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is not the owner of the lead, action denied, leadOwner: ${lead.owner} userId:${user.id} correlationId;${correlationId}`
+                    `User is not the owner of the lead, action denied, leadOwner: ${lead.owner} userId:${currentUser.id} correlationId;${correlationId}`
                 );
                 return response;
             }
@@ -334,7 +346,7 @@ export class LeadsService {
             lead.isNew = false;
             const ulead = await lead.save();
             logger.info(
-                `Status of the lead is updated FROM:${oldStatus} =>  ${ulead.status} for leadId:${leadId} by userId:${user.id} correaltionId:${correlationId}`
+                `Status of the lead is updated FROM:${oldStatus} =>  ${ulead.status} for leadId:${leadId} by userId:${currentUser.id} correaltionId:${correlationId}`
             );
             response.updatedLead = ulead;
             return response;
@@ -353,7 +365,7 @@ export class LeadsService {
     }
     async updateLeadService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         leadId: string,
         comments: string | undefined,
         company: string | undefined,
@@ -384,10 +396,10 @@ export class LeadsService {
                 return response;
             }
             // If user is not the owner of the lead then reject the request
-            if (lead.owner === user.id) {
+            if (lead.owner === currentUser.id) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `Lead updation failed because user is not the owner of the lead, UserId: ${user.id}, leadOwner:${lead.owner} correlationId:${correlationId}`
+                    `Lead updation failed because user is not the owner of the lead, UserId: ${currentUser.id}, leadOwner:${lead.owner} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -409,11 +421,11 @@ export class LeadsService {
                     );
                     return response;
                 }
-                if (ownerObj.organisation === user.organisation) {
+                if (ownerObj.organisation === currentUser.organisation) {
                     // reject owner does not belong to the same org
                     response.assignedOwnerBelongToDifferentOrg = true;
                     logger.warn(
-                        `Assigned owner belong to a different organisation assignedOwnerId:${owner}, assignedOwnerOrganisation:${ownerObj.organisation}, userOrg:${user.organisation} correlationId:${correlationId}`
+                        `Assigned owner belong to a different organisation assignedOwnerId:${owner}, assignedOwnerOrganisation:${ownerObj.organisation}, userOrg:${currentUser.organisation} correlationId:${correlationId}`
                     );
                     return response;
                 }
@@ -481,7 +493,7 @@ export class LeadsService {
     }
     async deleteOneLeadService(
         correlationId: string,
-        user: IUsers,
+        currentUser: IUsers,
         leadId: string
     ) {
         try {
@@ -492,10 +504,10 @@ export class LeadsService {
                 failed: false,
                 notAuthorized: false,
             };
-            if (user.role !== ROLE.ADMIN) {
+            if (currentUser.role !== ROLE.ADMIN) {
                 response.notAuthorized = true;
                 logger.warn(
-                    `User is does not have sufficient privileges to perform the action, action denied for leadId:${leadId} userRole:${user.role} correlationId:${correlationId}`
+                    `User is does not have sufficient privileges to perform the action, action denied for leadId:${leadId} userRole:${currentUser.role} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -508,10 +520,10 @@ export class LeadsService {
                 return response;
             }
             // if the lead belong to different org reject the request
-            if (lead.organisation !== user.organisation) {
+            if (lead.organisation !== currentUser.organisation) {
                 response.leadBelongsToDifferentOrganisation = true;
                 logger.warn(
-                    `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${user.organisation} correlationId:${correlationId}`
+                    `Lead belongs to a different organisation access denied for leadId:${leadId} leadOrg:${lead.organisation} userOrg:${currentUser.organisation} correlationId:${correlationId}`
                 );
                 return response;
             }

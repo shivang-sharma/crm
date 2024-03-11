@@ -28,6 +28,47 @@ export async function FindManyLeadsByOrganisationId(
     return leads;
 }
 
+export async function FindManyLeadsBy(
+    organisationId: Schema.Types.ObjectId,
+    limit: number,
+    page: number,
+    comments: string | undefined,
+    name: string | undefined,
+    owner: string | undefined,
+    status: string | undefined
+) {
+    const leads = await Leads.find({
+        $and: [
+            {
+                organisation: organisationId,
+            },
+            {
+                $or: [
+                    {
+                        $text: {
+                            $search: comments ? comments : "",
+                        },
+                    },
+                    {
+                        $text: {
+                            $search: name ? name : "",
+                        },
+                    },
+                    {
+                        owner: owner,
+                    },
+                    {
+                        status: status,
+                    },
+                ],
+            },
+        ],
+    })
+        .limit(limit)
+        .skip((page - 1) * limit);
+    return leads;
+}
+
 export async function FindLeadByIdAndUpdate(
     id: string,
     updateData: Partial<ILeads>

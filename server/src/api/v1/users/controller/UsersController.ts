@@ -8,6 +8,7 @@ import { ZUserId } from "../zschema/ZUserId";
 import { ApiError } from "@/utils/error/ApiError";
 import { ZChangeRoleInputSchema } from "../zschema/ZChangeRoleInputSchema";
 import { ZUpdateUserInputSchema } from "../zschema/ZUpdateUserInputSchema";
+import { ZGetAllUserInputSchema } from "../zschema/ZGetAllUserInputSchema";
 
 export class UsersController {
     private service: UsersService;
@@ -16,18 +17,40 @@ export class UsersController {
     }
     GetAllUsers = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetAllUsers request recieved for correlationId: ${correlationId}`
         );
-        if (user) {
+        logger.info(
+            `Validating the GetAllUsers request payload, payload ${req.params} for correlationId:${correlationId}`
+        );
+        const validationResult = ZGetAllUserInputSchema.safeParse(req.params);
+        if (!validationResult.success) {
+            logger.warn(
+                `Validation failed for GetAllUsers request payload errors:${validationResult.error.errors} for correlationId:${correlationId}`
+            );
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                "Invalid input",
+                true,
+                validationResult.error.errors
+            );
+        }
+        if (currentUser) {
+            const { limit, page, email, username } = validationResult.data;
+            logger.info(
+                `Validation for GetAllUsers payload is successfull for correlationId:${correlationId}`
+            );
             logger.info(
                 `Attempting to call getAllUsersForCurrentOrgService correlationId:${correlationId}`
             );
-            // TODO: Pagination and filter quries
             const result = await this.service.getAllUsersForCurrentOrgService(
                 correlationId,
-                user
+                currentUser,
+                limit,
+                page,
+                email,
+                username
             );
             logger.info(
                 `Call to getAllUsersForCurrentOrgService ended successfully correlationId:${correlationId}`
@@ -45,7 +68,7 @@ export class UsersController {
     };
     GetOneUser = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `GetOneUser request recieved for correlationId: ${correlationId}`
         );
@@ -66,18 +89,18 @@ export class UsersController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { userId } = validationResult.data;
             logger.info(
                 `Validation successfull for GetOneUser request for correlationId:${correlationId}`
             );
-            if (user.id === userId) {
+            if (currentUser.id === userId) {
                 return res
                     .status(StatusCodes.OK)
                     .json(
                         new ApiResponse(
                             StatusCodes.OK,
-                            user,
+                            currentUser,
                             "Successfully found user"
                         )
                     );
@@ -87,7 +110,7 @@ export class UsersController {
             );
             const result = await this.service.getOneUserService(
                 correlationId,
-                user,
+                currentUser,
                 userId
             );
             logger.info(
@@ -116,7 +139,7 @@ export class UsersController {
     };
     ChangeRole = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `ChangeRole request recieved for correlationId: ${correlationId}`
         );
@@ -140,7 +163,7 @@ export class UsersController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { role, userId } = validationResult.data;
             logger.info(
                 `Validation successfull for ChangeRole request for correlationId:${correlationId}`
@@ -150,7 +173,7 @@ export class UsersController {
             );
             const result = await this.service.changeRoleService(
                 correlationId,
-                user,
+                currentUser,
                 userId,
                 role
             );
@@ -194,7 +217,7 @@ export class UsersController {
     };
     RemoveFromOrganisation = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `RemoveFromOrganisation request recieved for correlationId: ${correlationId}`
         );
@@ -215,7 +238,7 @@ export class UsersController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { userId } = validationResult.data;
             logger.info(
                 `Validation successfull for RemoveFromOrganisation request for correlationId:${correlationId}`
@@ -225,7 +248,7 @@ export class UsersController {
             );
             const result = await this.service.removeFromOrganisationService(
                 correlationId,
-                user,
+                currentUser,
                 userId
             );
             logger.info(
@@ -266,7 +289,7 @@ export class UsersController {
     };
     UpdateUser = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `UpdateUser request recieved for correlationId: ${correlationId}`
         );
@@ -293,7 +316,7 @@ export class UsersController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             const { userId, name } = validationResult.data;
             logger.info(
                 `Validation successfull for UpdateUser request for correlationId:${correlationId}`
@@ -303,7 +326,7 @@ export class UsersController {
             );
             const result = await this.service.updateUserService(
                 correlationId,
-                user,
+                currentUser,
                 userId,
                 name
             );
@@ -337,7 +360,7 @@ export class UsersController {
     };
     DeleteUser = async (req: CustomRequest, res: Response) => {
         const correlationId = res.getHeader("X-CorrelationId") as string;
-        const user = req.user;
+        const currentUser = req.user;
         logger.info(
             `DeleteUser request recieved for correlationId: ${correlationId}`
         );
@@ -354,7 +377,7 @@ export class UsersController {
                 validationResult.error.errors
             );
         }
-        if (user) {
+        if (currentUser) {
             logger.info(
                 `Validation of DeleteUser payload is successfull for correlationId:${correlationId}`
             );
@@ -364,7 +387,7 @@ export class UsersController {
             );
             const result = await this.service.deleteUserService(
                 correlationId,
-                user,
+                currentUser,
                 userId
             );
             logger.info(
