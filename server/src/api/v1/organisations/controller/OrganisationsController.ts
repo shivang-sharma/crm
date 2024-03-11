@@ -61,21 +61,22 @@ export class OrganisationsController {
             );
             if (result.failed) {
                 if (result.alreadyAssociatedWithOrg) {
-                    logger.error(
-                        `User is already associated with an organisation, correlationId: ${correlationId}`
-                    );
                     throw new ApiError(
                         StatusCodes.CONFLICT,
                         "User is already associated with an organisation cannot create another org",
                         true
                     );
                 }
-                logger.error(
-                    `Something went wrong while creatign the org user for correlationId: ${correlationId}`
-                );
+                if (result.organisationWithNameAlreadyExist) {
+                    throw new ApiError(
+                        StatusCodes.CONFLICT,
+                        "Organisation with the given name already exists, try different name",
+                        true
+                    );
+                }
                 throw new ApiError(
                     StatusCodes.INTERNAL_SERVER_ERROR,
-                    "Something went wrong while registering the user",
+                    "Something went wrong while creating organisation the user",
                     true
                 );
             }

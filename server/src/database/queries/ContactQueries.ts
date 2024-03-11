@@ -15,6 +15,20 @@ export async function FindManyContactsByOrganisationId(
     });
     return contacts;
 }
+export async function FindContactByNameOrEmailOrPhonNumber(
+    name: string,
+    email: string,
+    phoneNumber: string
+) {
+    const contact = await Contacts.findOne({
+        $or: [
+            { name: name },
+            { email: email },
+            { "phone.number": phoneNumber },
+        ],
+    });
+    return contact;
+}
 export async function FindManyContactsBy(
     organisationId: mongoose.Types.ObjectId,
     limit: number,

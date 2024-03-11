@@ -326,7 +326,7 @@ export class UsersService {
                 return response;
             }
             const deleteUser = await FindUserByIdAndDelete(userId);
-            if (deleteUser) {
+            if (!deleteUser) {
                 response.failed = true;
                 logger.warn(
                     `User deletion failed for some unknown reason userId:${userId} correlatioId:${correlationId}`
@@ -344,7 +344,6 @@ export class UsersService {
             logger.info(
                 `User removed as owner from all the leads user owned userId:${userId}, noOfLeadsModified:${updateResult.modifiedCount}, changesAcknowledged:${updateResult.acknowledged} for correlationId:${correlationId}`
             );
-            // TODO: Remove this user as owner from all the deals user owned
             await session.commitTransaction();
             await session.endSession();
             logger.info(

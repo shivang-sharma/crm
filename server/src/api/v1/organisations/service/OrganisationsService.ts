@@ -6,6 +6,7 @@ import {
     DeleteDealsByOrganisationId,
     DeleteOrganisationById,
     FindOneOrganisationById,
+    FindOneOrganisationByName,
     FindOneUserById,
     FindOrganisationByIdAndUpdateOwner,
     FindUserByIdAndUpdateOrganisationAndRole,
@@ -30,6 +31,7 @@ export class OrganisationsService {
         session.startTransaction();
         try {
             const response: CreateOrganisationsServiceResult = {
+                organisationWithNameAlreadyExist: false,
                 alreadyAssociatedWithOrg: false,
                 failed: false,
                 org: null,
@@ -46,6 +48,15 @@ export class OrganisationsService {
                 response.failed = true;
                 logger.warn(
                     `Organisation creation failed because currentUser is already associated with an Org. currentUser: ${currentUser.toJSON()} correlationId: ${correlationId} `
+                );
+                return response;
+            }
+            const exists = await FindOneOrganisationByName(name);
+            if (exists) {
+                response.organisationWithNameAlreadyExist = true;
+                response.failed = true;
+                logger.warn(
+                    `Organisation with name already exists for name:${name} correlationId:${correlationId}`
                 );
                 return response;
             }
@@ -375,6 +386,7 @@ export class OrganisationsService {
 }
 
 export type CreateOrganisationsServiceResult = {
+    organisationWithNameAlreadyExist: boolean;
     alreadyAssociatedWithOrg: boolean;
     failed: boolean;
     org: IOrganisations | null;

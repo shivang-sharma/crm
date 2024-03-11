@@ -83,11 +83,9 @@ export class AccountsController {
             `GetAllAccount request recieved for correlationId: ${correlationId}`
         );
         logger.info(
-            `Validating the GetAllAccount request payload, payload ${req.params} for correlationId:${correlationId}`
+            `Validating the GetAllAccount request payload, payload ${req.query} for correlationId:${correlationId}`
         );
-        const validationResult = ZGetAllAccountInputSchema.safeParse(
-            req.params
-        );
+        const validationResult = ZGetAllAccountInputSchema.safeParse(req.query);
         if (!validationResult.success) {
             logger.warn(
                 `Validation failed for GetAllAccount request payload, errors:${JSON.stringify(
@@ -115,8 +113,8 @@ export class AccountsController {
                 await this.service.getAllAccountsForCurrentOrgService(
                     correlationId,
                     currentUser,
-                    limit,
-                    page,
+                    parseInt(limit),
+                    parseInt(page),
                     name,
                     priority,
                     size,

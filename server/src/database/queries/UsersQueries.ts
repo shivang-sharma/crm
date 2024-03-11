@@ -128,6 +128,15 @@ export async function FindManyUsersBy(
     email: string | undefined,
     username: string | undefined
 ) {
+    if (!email && !username) {
+        const users = await Users.find({
+            organisation: organisationId,
+        })
+            .select("-password -refreshToken")
+            .limit(limit)
+            .skip((page - 1) * limit);
+        return users;
+    }
     const users = await Users.find(
         {
             $and: [
@@ -179,6 +188,8 @@ export async function FindUserByIdAndUpdate(
 }
 
 export async function FindUserByIdAndDelete(userId: string) {
-    const deletedUser = await Users.findByIdAndDelete(userId);
+    const deletedUser = await Users.findByIdAndDelete(userId).select(
+        "-password -refreshToken"
+    );
     return deletedUser;
 }

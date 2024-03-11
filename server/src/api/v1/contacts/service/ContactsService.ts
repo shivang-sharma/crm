@@ -11,6 +11,8 @@ import {
     DeleteOneContactById,
     FindContactById,
     FindContactByIdAndUpdate,
+    FindContactByName,
+    FindContactByNameOrEmailOrPhonNumber,
     FindManyContactsBy,
 } from "@/database/queries/ContactQueries";
 import { StatusCodes } from "http-status-codes";
@@ -38,6 +40,7 @@ export class ContactsService {
                 notAuthorized: false,
                 contact: null,
                 notAssociatedWithAnyOrg: false,
+                contactWithSameNameOrEmailOrPhoneNumberExist: false,
             };
             if (!currentUser.organisation) {
                 response.notAssociatedWithAnyOrg = true;
@@ -102,6 +105,25 @@ export class ContactsService {
                     number: phoneData.phoneNumber,
                 };
                 newContactData.organisation = currentUser.organisation;
+                const exists = await FindContactByNameOrEmailOrPhonNumber(
+                    name,
+                    email,
+                    phoneData.phoneNumber
+                );
+                if (exists) {
+                    response.contactWithSameNameOrEmailOrPhoneNumberExist =
+                        true;
+                    logger.warn(
+                        `Contact with same name or email or phoneNumber exists, name:${name}, email:${email}, phone:${phoneData}, existingName:${
+                            exists.name
+                        } existingEmail:${
+                            exists.email
+                        } existingPhon:${JSON.stringify(
+                            exists.phone
+                        )} for correlationId:${correlationId}`
+                    );
+                    return response;
+                }
                 const newContact = await CreateNewContact(newContactData);
                 logger.info(
                     `Contact created ${newContact.toJSON()} correlationId:${correlationId}`
@@ -455,6 +477,7 @@ export type CreateContactServiceResult = {
     notAuthorized: boolean;
     notAssociatedWithAnyOrg: boolean;
     contact: IContacts | null;
+    contactWithSameNameOrEmailOrPhoneNumberExist: boolean;
 };
 export type GetAllContactsForCurrentOrganisationServiceResult = {
     contacts: IContacts[];

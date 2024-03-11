@@ -70,6 +70,13 @@ export class ContactsController {
             logger.info(
                 `Call to createContactService service ended for correlationId: ${correlationId}`
             );
+            if (result.contactWithSameNameOrEmailOrPhoneNumberExist) {
+                throw new ApiError(
+                    StatusCodes.CONFLICT,
+                    "Contact with same name or email or phone exists",
+                    true
+                );
+            }
             if (result.notAssociatedWithAnyOrg) {
                 throw new ApiError(
                     StatusCodes.FORBIDDEN,
@@ -126,11 +133,9 @@ export class ContactsController {
             `GetAllContacts request recieved for correlationId: ${correlationId}`
         );
         logger.info(
-            `Validating the request payload for GetAllContact request payload:${req.params} for correlationId:${correlationId}`
+            `Validating the request payload for GetAllContact request payload:${req.query} for correlationId:${correlationId}`
         );
-        const validationResult = ZGetAllContactInputSchema.safeParse(
-            req.params
-        );
+        const validationResult = ZGetAllContactInputSchema.safeParse(req.query);
         if (!validationResult.success) {
             logger.warn(
                 `Validation failed for GetAllContact request payload, errors: ${validationResult.error.errors} for correlationId:${correlationId}`
@@ -156,8 +161,8 @@ export class ContactsController {
                 await this.service.getAllContactsForCurrentOrgService(
                     correlationId,
                     currentUser,
-                    limit,
-                    page,
+                    parseInt(limit),
+                    parseInt(page),
                     account,
                     name,
                     priority,

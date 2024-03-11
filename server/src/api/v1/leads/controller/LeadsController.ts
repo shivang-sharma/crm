@@ -210,9 +210,9 @@ export class LeadsController {
             `GetAllLeads request recieved for correlationId: ${correlationId}`
         );
         logger.info(
-            `Validating the GetAllLeads request payload, payload: ${req.params} for correlationId:${correlationId}`
+            `Validating the GetAllLeads request payload, payload: ${req.query} for correlationId:${correlationId}`
         );
-        const validationResult = ZGetAllLeadsInputSchema.safeParse(req.params);
+        const validationResult = ZGetAllLeadsInputSchema.safeParse(req.query);
         if (!validationResult.success) {
             logger.warn(
                 `Validation failed for GetAllLeads request error:${JSON.stringify(
@@ -240,8 +240,8 @@ export class LeadsController {
                 await this.service.getAllLeadForCurrentOrganisationService(
                     correlationId,
                     currentUser,
-                    limit,
-                    page,
+                    parseInt(limit),
+                    parseInt(page),
                     name,
                     owner,
                     status

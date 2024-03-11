@@ -145,9 +145,9 @@ export class DealsController {
             `GetAllDeals request recieved for correlationId: ${correlationId}`
         );
         logger.info(
-            `Validating the GetAllDeals request payload, payload:${req.params} for correlationId:${correlationId}`
+            `Validating the GetAllDeals request payload, payload:${req.query} for correlationId:${correlationId}`
         );
-        const validationResult = ZGetAllDealsInputSchema.safeParse(req.params);
+        const validationResult = ZGetAllDealsInputSchema.safeParse(req.query);
         if (!validationResult.success) {
             logger.warn(
                 `Validation failed for GetAllDeals request payload, errors:${validationResult.error.errors} for correlationId:${correlationId}`
@@ -192,8 +192,8 @@ export class DealsController {
                 stage,
                 value_gt,
                 value_lt,
-                limit,
-                page
+                parseInt(limit),
+                parseInt(page)
             );
             logger.info(
                 `Call to getAllDealsForCurrentOrgService ended successfully correlationId:${correlationId}`

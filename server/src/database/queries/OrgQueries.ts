@@ -13,7 +13,12 @@ export async function CreateNewOrganisation(
     const saved = await org.save();
     return saved;
 }
-
+export async function FindOneOrganisationByName(name: string) {
+    const org = await Organisations.findOne({
+        name: name,
+    });
+    return org;
+}
 export async function FindOneOrganisationById(
     organisationId: mongoose.Types.ObjectId
 ) {
