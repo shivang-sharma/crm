@@ -3,7 +3,7 @@
     "ip": "127.0.0.1",
     "port": 5000,
     "db": {
-        "uri": "mongodb://localhost:27017/crm"
+        "uri": "mongodb://root:password@127.0.0.1:27017"
     },
     "accessTokenSecret": "secrete",
     "accessTokenExpiry": "2d",

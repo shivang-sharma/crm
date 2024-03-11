@@ -21,7 +21,9 @@ export const ZSignUpInputSchema = z.object({
                 description: "Last Name",
                 invalid_type_error: "Last Name should be a valid string.",
             })
-            .min(1, "Last Name cannot be empty"),
+            .min(1, "Last Name cannot be empty")
+            .optional()
+            .default(""),
     }),
     email: z
         .string({

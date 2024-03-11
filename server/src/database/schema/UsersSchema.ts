@@ -46,6 +46,7 @@ const usersSchema = new Schema<IUsers>(
             type: Schema.Types.ObjectId,
             ref: "Organisation",
             index: true,
+            default: undefined,
         },
         refreshToken: {
             type: String,
@@ -78,11 +79,11 @@ usersSchema.methods.generateAccessToken = function () {
             _id: this._id,
             email: this.email,
             username: this.username,
-            fullname: this.fulName,
+            fullname: this.fullName,
         },
         config.get("accessTokenSecret") || "secret",
         {
-            expiresIn: config.get("accessTokenSecret"),
+            expiresIn: config.get("accessTokenExpiry") || "1d",
         }
     );
 };
@@ -93,7 +94,7 @@ usersSchema.methods.generateRefreshToken = function () {
         },
         config.get("refreshTokenSecret") || "secret",
         {
-            expiresIn: config.get("refreshTokenExpiry"),
+            expiresIn: config.get("refreshTokenExpiry") || "10d",
         }
     );
 };

@@ -28,7 +28,7 @@ const config = convict({
         uri: {
             doc: "Connection URI for mongo",
             format: "*",
-            default: "mongodb://localhost:27017/crm",
+            default: "mongodb://root:password@127.0.0.1:27017",
         },
     },
     corsOrigin: {

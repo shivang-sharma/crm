@@ -18,16 +18,10 @@ export class AuthController {
         logger.info(
             `SignUp request recieved for correlationId: ${correlationId}`
         );
-        const userInput = {
-            username: req.body.username,
-            fullName: req.body.fullName,
-            email: req.body.email,
-            password: req.body.password,
-        };
         logger.info(
-            `Validating the SignUp request payload using zod schema, payload: ${userInput} correlationId: ${correlationId}`
+            `Validating the SignUp request payload using zod schema, payload: ${req.body} correlationId: ${correlationId}`
         );
-        const validationResult = ZSignUpInputSchema.safeParse(userInput);
+        const validationResult = ZSignUpInputSchema.safeParse(req.body);
         if (!validationResult.success) {
             logger.warn(
                 `Validation failed for signup request payload error ${JSON.stringify(
@@ -50,8 +44,7 @@ export class AuthController {
         );
         const result = await this.service.signUpService(
             username,
-            name.fname,
-            name.lname,
+            name,
             email,
             password
         );

@@ -14,27 +14,25 @@ export async function FindOneUserByUsernameOrEmail(
 }
 
 export async function CreateNewUser(
-    fname: string,
-    lname: string,
+    name: { fname: string; lname: string | undefined },
     username: string,
     email: string,
     password: string
 ) {
-    const user = await Users.create(
-        {
+    try {
+        const user = new Users({
             email: email,
-            name: {
-                fname: fname,
-                lname: lname,
-            },
+            name: name,
             username: username.toLowerCase(),
             password: password,
-        },
-        {
-            select: "-password -refreshToken",
-        }
-    );
-    return user;
+        });
+        await user.validate();
+        const result = await user.save();
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 export async function FindOneUserById(id: string) {

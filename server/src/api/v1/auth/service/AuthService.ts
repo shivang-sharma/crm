@@ -12,12 +12,14 @@ import { StatusCodes } from "http-status-codes";
 export class AuthService {
     async signUpService(
         username: string,
-        fname: string,
-        lname: string,
+        name: { fname: string; lname: string | undefined },
         email: string,
         password: string
     ): Promise<SignUpServiceResult> {
         try {
+            logger.info(
+                `${name.fname},${name.lname},${username},${email},${password}`
+            );
             const result: SignUpServiceResult = {
                 exist: false,
                 failed: false,
@@ -34,13 +36,7 @@ export class AuthService {
                 result.exist = true;
                 return result;
             }
-            const user = await CreateNewUser(
-                fname,
-                lname,
-                username,
-                email,
-                password
-            );
+            const user = await CreateNewUser(name, username, email, password);
             const createdUser = await FindOneUserById(user._id);
             if (!createdUser) {
                 logger.warn(`User creation failed due to unknown reason`);
