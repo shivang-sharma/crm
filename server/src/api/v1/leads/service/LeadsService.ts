@@ -171,7 +171,7 @@ export class LeadsService {
                 );
                 return response;
             }
-            if (lead.organisation.equals(currentUser.organisation)) {
+            if (!lead.organisation.equals(currentUser.organisation)) {
                 response.leadBelongToDifferentOrg = true;
                 logger.warn(
                     `Lead belong to a different organisation, leadOrgId:${lead.organisation} userOrg:${currentUser.organisation} for correlationId:${correlationId}`
@@ -179,7 +179,7 @@ export class LeadsService {
                 return response;
             }
             // If the user is not the owner of the lead then reject the request
-            if (!lead.owner.equals(currentUser.id)) {
+            if (lead.owner && !lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User is not the owner of the Lead, leadId:${leadId}, ownerId:${lead.owner}, userId:${currentUser.id} for correlationId:${correlationId}`
@@ -352,7 +352,7 @@ export class LeadsService {
                 return response;
             }
             // if user is not the owner of the lead then reject
-            if (!lead.owner.equals(currentUser.id)) {
+            if (lead.owner && !lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `User is not the owner of the lead, action denied, leadOwner: ${lead.owner} userId:${currentUser.id} correlationId;${correlationId}`
@@ -415,7 +415,7 @@ export class LeadsService {
                 return response;
             }
             // If user is not the owner of the lead then reject the request
-            if (!lead.owner.equals(currentUser.id)) {
+            if (lead.owner && !lead.owner.equals(currentUser.id)) {
                 response.notAuthorized = true;
                 logger.warn(
                     `Lead updation failed because user is not the owner of the lead, UserId: ${currentUser.id}, leadOwner:${lead.owner} correlationId:${correlationId}`

@@ -1,5 +1,5 @@
 import { IDeals, IUsers } from "@/database";
-import { ROLE } from "@/database/enums";
+import { ROLE, STAGE } from "@/database/enums";
 import { FindAccountById, FindOneUserById } from "@/database/queries";
 import { FindContactById } from "@/database/queries/ContactQueries";
 import {
@@ -13,6 +13,7 @@ import {
 import { ApiError } from "@/utils/error/ApiError";
 import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 
 export class DealsService {
     async createDealService(
@@ -113,7 +114,7 @@ export class DealsService {
                     );
                     return response;
                 }
-                if (contactObj.organisation !== currentUser.organisation) {
+                if (!contactObj.organisation.equals(currentUser.organisation)) {
                     response.someContactsBelongToDifferentOrg = true;
                     logger.warn(
                         `Assigned contact belongs to different org correlationId:${correlationId}`
@@ -370,6 +371,13 @@ export class DealsService {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 }).filter(([key, value]) => value !== undefined)
             );
+            if (
+                stage &&
+                (stage === STAGE.WON.toString() ||
+                    stage === STAGE.LOST.toString())
+            ) {
+                dealUpdate.closedAt = new Date();
+            }
             const updatedDeal = await FindDealByIdAndUpdate(dealId, dealUpdate);
             if (!updatedDeal) {
                 response.notFound = true;

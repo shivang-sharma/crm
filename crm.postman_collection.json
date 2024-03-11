@@ -111,7 +111,7 @@
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/users/65eefd530504a78394bca05c"
+						"url": "{{BASE_URL}}/users/65ef2cb65e1e1fd1cce5176f"
 					},
 					"response": []
 				},
@@ -182,7 +182,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"hubspot\"\n}",
+							"raw": "{\n    \"name\": \"zoom\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -328,14 +328,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\n    \"account\": \"65ef2d0e5e1e1fd1cce5178f\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{BASE_URL}}/contacts/65eeffa234d5de8f136ebf3f"
+						"url": "{{BASE_URL}}/contacts/65ef2d365e1e1fd1cce51797"
 					},
 					"response": []
 				},
@@ -371,6 +371,15 @@
 						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"Sales CRM for Zoom\",\n    \"owner\":\"65ef2cb65e1e1fd1cce5176f\",\n    \"contacts\": [\"65ef2d365e1e1fd1cce51797\"],\n    \"value\": {\n        \"amount\":150000,\n        \"currency\": \"USD\"\n    },\n    \"account\": \"65ef2d0e5e1e1fd1cce5178f\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "{{BASE_URL}}/deals"
 					},
 					"response": []
@@ -386,61 +395,7 @@
 						},
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{BASE_URL}}/deals?name=&stage=&owner=&value_gt=&value_lt=&account=&priority=&close_probability_gt=&close_probability_lt=&page=&limit=",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"deals"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": ""
-								},
-								{
-									"key": "stage",
-									"value": ""
-								},
-								{
-									"key": "owner",
-									"value": ""
-								},
-								{
-									"key": "value_gt",
-									"value": ""
-								},
-								{
-									"key": "value_lt",
-									"value": ""
-								},
-								{
-									"key": "account",
-									"value": ""
-								},
-								{
-									"key": "priority",
-									"value": ""
-								},
-								{
-									"key": "close_probability_gt",
-									"value": ""
-								},
-								{
-									"key": "close_probability_lt",
-									"value": ""
-								},
-								{
-									"key": "page",
-									"value": ""
-								},
-								{
-									"key": "limit",
-									"value": ""
-								}
-							]
-						}
+						"url": "{{BASE_URL}}/deals"
 					},
 					"response": []
 				},
@@ -470,7 +425,7 @@
 						},
 						"method": "PATCH",
 						"header": [],
-						"url": "{{BASE_URL}}/deals/329823"
+						"url": "{{BASE_URL}}/deals/65ef2d8a5e1e1fd1cce517a7"
 					},
 					"response": []
 				},
@@ -508,7 +463,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\n}",
+							"raw": "{\n    \"name\":\"Daniel\",\n    \"email\":\"daniel@gmail.com\",\n    \"company\":\"zoom\",\n    \"phone\": {\n        \"number\":\"+18432320145\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -530,7 +485,7 @@
 						},
 						"method": "POST",
 						"header": [],
-						"url": "{{BASE_URL}}/leads/4032843/move_to_contacts"
+						"url": "{{BASE_URL}}/leads/65ef2ce65e1e1fd1cce51783/move_to_contacts"
 					},
 					"response": []
 				},
@@ -545,37 +500,7 @@
 						},
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{BASE_URL}}/leads?name=&status=&owner=&page=&limit=",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"leads"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": ""
-								},
-								{
-									"key": "status",
-									"value": ""
-								},
-								{
-									"key": "owner",
-									"value": ""
-								},
-								{
-									"key": "page",
-									"value": ""
-								},
-								{
-									"key": "limit",
-									"value": ""
-								}
-							]
-						}
+						"url": "{{BASE_URL}}/leads"
 					},
 					"response": []
 				},
@@ -605,7 +530,16 @@
 						},
 						"method": "PATCH",
 						"header": [],
-						"url": "{{BASE_URL}}/leads/439u39"
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"ATTEMPTED_TO_CONTACT\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/leads/65ef2ce65e1e1fd1cce51783/change_status"
 					},
 					"response": []
 				},
@@ -620,7 +554,16 @@
 						},
 						"method": "PATCH",
 						"header": [],
-						"url": "{{BASE_URL}}/leads/439u39"
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"owner\":\"65ef2cb65e1e1fd1cce5176f\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/leads/65ef2ce65e1e1fd1cce51783"
 					},
 					"response": []
 				},
@@ -635,7 +578,7 @@
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/leads/43235"
+						"url": "{{BASE_URL}}/leads/65ef15c4449c05147d0f307a"
 					},
 					"response": []
 				}
@@ -656,6 +599,15 @@
 						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"Zoom\",\n    \"description\": \"Video confrencing solution provider\",\n    \"industry\":\"Software\",\n    \"size\":\"MID\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "{{BASE_URL}}/accounts"
 					},
 					"response": []
@@ -671,41 +623,7 @@
 						},
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{BASE_URL}}/accounts?name=&priority=&size=&type=&page=&limit=",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"accounts"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": ""
-								},
-								{
-									"key": "priority",
-									"value": ""
-								},
-								{
-									"key": "size",
-									"value": ""
-								},
-								{
-									"key": "type",
-									"value": ""
-								},
-								{
-									"key": "page",
-									"value": ""
-								},
-								{
-									"key": "limit",
-									"value": ""
-								}
-							]
-						}
+						"url": "{{BASE_URL}}/accounts"
 					},
 					"response": []
 				},
@@ -720,7 +638,7 @@
 						},
 						"method": "GET",
 						"header": [],
-						"url": "{{BASE_URL}}/accounts/49y43984"
+						"url": "{{BASE_URL}}/accounts/65ef1a22b072ca9077a8a739"
 					},
 					"response": []
 				},
@@ -735,7 +653,16 @@
 						},
 						"method": "PATCH",
 						"header": [],
-						"url": "{{BASE_URL}}/accounts/32428y4928"
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\":\"PROSPECT\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/accounts/65ef1a22b072ca9077a8a739"
 					},
 					"response": []
 				},
@@ -750,7 +677,7 @@
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "{{BASE_URL}}/accounts/32984u329"
+						"url": "{{BASE_URL}}/accounts/65ef1a22b072ca9077a8a739"
 					},
 					"response": []
 				}

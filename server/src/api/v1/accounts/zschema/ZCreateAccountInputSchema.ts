@@ -33,7 +33,9 @@ export const ZCreateAccountInputSchema = z.object({
                 "Size should be a valid value MICRO | SMALL | MID | LARGE",
             required_error: "Size is required",
         })
-        .refine((size) => ZSIZE.safeParse(size).success),
+        .refine((size) => ZSIZE.safeParse(size).success, {
+            message: "Size should be a valid value MICRO | SMALL | MID | LARGE",
+        }),
     type: z
         .string({
             description:

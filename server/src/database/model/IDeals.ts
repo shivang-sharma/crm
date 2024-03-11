@@ -1,4 +1,4 @@
-import mongoose, { Date, Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { STAGE } from "../enums/EStage";
 import { PRIORITY } from "../enums/EPriority";
 import { Value } from "../types/value";

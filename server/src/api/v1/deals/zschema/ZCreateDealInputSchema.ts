@@ -1,4 +1,4 @@
-import { ZCURRENCY, ZPRIORITY, ZSTAGE } from "@/database/enums";
+import { CURRENCY, ZCURRENCY, ZPRIORITY, ZSTAGE } from "@/database/enums";
 import mongoose from "mongoose";
 import z from "zod";
 
@@ -34,19 +34,23 @@ export const ZCreateDealInputSchema = z.object({
                 return false;
             }
         }),
-    value: z.object({
-        amount: z.number(),
-        currency: z
-            .string({
-                description: "Currency 'USD' | 'INR'",
-                invalid_type_error:
-                    "Invalid currency, possible values are 'USD' | 'INR'",
-            })
-            .refine((currency) => ZCURRENCY.safeParse(currency).success, {
-                message: "Invalid currency, possible values are 'USD' | 'INR'",
-            })
-            .optional(),
-    }),
+    value: z
+        .object({
+            amount: z.number(),
+            currency: z
+                .string({
+                    description: "Currency 'USD' | 'INR'",
+                    invalid_type_error:
+                        "Invalid currency, possible values are 'USD' | 'INR'",
+                })
+                .refine((currency) => ZCURRENCY.safeParse(currency).success, {
+                    message:
+                        "Invalid currency, possible values are 'USD' | 'INR'",
+                })
+                .optional()
+                .default(CURRENCY.USD),
+        })
+        .default({ amount: 0 }),
     contacts: z
         .array(
             z
@@ -78,7 +82,7 @@ export const ZCreateDealInputSchema = z.object({
         .refine((account) => {
             try {
                 new mongoose.Types.ObjectId(account);
-                return true
+                return true;
             } catch (error) {
                 return false;
             }

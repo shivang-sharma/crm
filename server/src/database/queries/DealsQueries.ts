@@ -49,12 +49,18 @@ export async function FindManyDealsBy(
     if (orConditions.length > 0) {
         filter.$or = orConditions;
     }
-
-    const deals = await Deals.find(filter)
-        .sort({ score: { $meta: "textScore" } })
-        .limit(limit)
-        .skip((page - 1) * limit);
-    return deals;
+    if (name) {
+        const deals = await Deals.find(filter)
+            .sort({ score: { $meta: "textScore" } })
+            .limit(limit)
+            .skip((page - 1) * limit);
+        return deals;
+    } else {
+        const deals = await Deals.find(filter)
+            .limit(limit)
+            .skip((page - 1) * limit);
+        return deals;
+    }
 }
 export async function FindDealById(id: string) {
     const deal = await Deals.findById(id);
@@ -64,7 +70,9 @@ export async function FindDealByIdAndUpdate(
     id: string,
     updateData: Partial<IDeals>
 ) {
-    const updatedDeal = await Deals.findByIdAndUpdate(id, updateData);
+    const updatedDeal = await Deals.findByIdAndUpdate(id, updateData, {
+        new: true,
+    });
     return updatedDeal;
 }
 export async function DeleteOneDealById(id: string) {

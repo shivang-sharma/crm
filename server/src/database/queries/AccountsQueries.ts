@@ -44,7 +44,9 @@ export async function FindAccountByIdAndUpdate(
     id: string,
     updateData: Partial<IAccounts>
 ) {
-    const updatedAccount = await Accounts.findByIdAndUpdate(id, updateData);
+    const updatedAccount = await Accounts.findByIdAndUpdate(id, updateData, {
+        new: true,
+    });
     return updatedAccount;
 }
 

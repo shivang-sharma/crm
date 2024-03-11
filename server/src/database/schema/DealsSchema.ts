@@ -13,7 +13,7 @@ const dealsSchema = new Schema<IDeals>(
             text: true,
         },
         stage: {
-            type: Number,
+            type: String,
             enum: STAGE,
             default: STAGE.NEW,
             index: true,
@@ -22,6 +22,7 @@ const dealsSchema = new Schema<IDeals>(
             type: Schema.Types.ObjectId,
             ref: "Users",
             index: true,
+            default: null,
         },
         value: {
             amount: {
@@ -30,7 +31,7 @@ const dealsSchema = new Schema<IDeals>(
                 index: true,
             },
             currency: {
-                type: Number,
+                type: String,
                 enum: CURRENCY,
                 default: CURRENCY.USD,
             },
@@ -54,6 +55,7 @@ const dealsSchema = new Schema<IDeals>(
         },
         expectedCloseDate: {
             type: Date,
+            default: null,
         },
         closeProbability: {
             type: Number,
@@ -66,13 +68,14 @@ const dealsSchema = new Schema<IDeals>(
                 default: 0,
             },
             currency: {
-                type: Number,
+                type: String,
                 enum: CURRENCY,
                 default: CURRENCY.USD,
             },
         },
         closedAt: {
             type: Date,
+            default: null,
         },
         organisation: {
             type: Schema.Types.ObjectId,

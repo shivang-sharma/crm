@@ -58,7 +58,9 @@ export async function FindLeadByIdAndUpdate(
     id: string,
     updateData: Partial<ILeads>
 ) {
-    const updatedLead = await Leads.findByIdAndUpdate(id, updateData);
+    const updatedLead = await Leads.findByIdAndUpdate(id, updateData, {
+        new: true,
+    });
     return updatedLead;
 }
 

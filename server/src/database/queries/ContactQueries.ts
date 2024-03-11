@@ -60,7 +60,9 @@ export async function FindContactByIdAndUpdate(
     id: string,
     updateData: Partial<IContacts>
 ) {
-    const updatedContact = await Contacts.findByIdAndUpdate(id, updateData);
+    const updatedContact = await Contacts.findByIdAndUpdate(id, updateData, {
+        new: true,
+    });
     return updatedContact;
 }
 export async function DeleteOneContactById(id: string) {

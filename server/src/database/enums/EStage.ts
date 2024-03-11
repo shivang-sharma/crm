@@ -1,11 +1,11 @@
 import z from "zod";
 
 export enum STAGE {
-    NEW,
-    DISCOVERY,
-    PROPOSAL,
-    NEGOTIATION,
-    WON,
-    LOST,
+    NEW = "NEW",
+    DISCOVERY = "DISCOVERY",
+    PROPOSAL = "PROPOSAL",
+    NEGOTIATION = "NEGOTIATION",
+    WON = "WON",
+    LOST = "LOST",
 }
 export const ZSTAGE = z.nativeEnum(STAGE);
